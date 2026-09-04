@@ -6,7 +6,11 @@ A local desktop calorie and macro tracker with USDA food search, editable quanti
 
 Download **MacroTracker-Setup.exe** from [the latest release](https://github.com/h-covert/macro-tracker/releases/latest). Exit any older copy using its tray menu → **Exit**, then run setup once. It installs in `%LOCALAPPDATA%\Programs\MacroTracker` and adds Desktop and Start-menu shortcuts. No administrator access is needed.
 
-Requires Windows 10/11 x64 and .NET Framework 4.8. SQLite is supplied by Windows. This build is unsigned, so Windows may display its usual downloaded-app prompt.
+Requires Windows 10/11 x64 and .NET Framework 4.8. SQLite is supplied by Windows. This build is unsigned.
+
+**Setup issue under investigation:** A v1.3.0 installation reported a generic invocation error alongside an antivirus alert. The underlying failure and detection have not yet been identified. If you receive a security alert, stop installation and ask your IT/security team to review it; do not disable protection or add an exclusion. An antivirus detection must not be treated as an ordinary downloaded-app prompt or assumed to be a false positive.
+
+The source now reports the failing setup step and underlying exception, with a local `MacroTracker-setup-error-*.log` in the Windows temporary folder when writable. This diagnostic change is not included in the v1.3.0 download and does not resolve or certify the antivirus alert. Logs can contain Windows account names and local paths; review them before sharing. No replacement installer has been released for this issue yet.
 
 ## Future updates: no reinstall
 
