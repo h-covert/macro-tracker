@@ -1,0 +1,34 @@
+Macro Tracker — Windows x64 build
+Date: 2026-09-04
+
+PASS: local executable compilation using the Windows .NET Framework C# compiler.
+PASS: 27 database and business-logic integration checks.
+PASS: all six screens rendered in a running Windows WPF application.
+PASS: actual Quick Add dialog input and Save button produced a persisted entry.
+PASS: visual inspection of Dashboard, Welcome, Quick Add, and Weight renders.
+
+No test food or weight data is included in the normal application database.
+Tests use isolated database files.
+
+Windows notification display/click delivery and automatic login startup have
+not been independently verified end to end. Use Test notification on the
+destination PC. Startup remains disabled by default.
+
+See README.md for scheduler, sleep, history, and export behavior.
+
+PASS: separate-process restart retained food, reminders, favorites, and weight.
+
+USDA update:
+PASS: 27 core integration checks on the updated executable.
+PASS: 18 USDA checks including actual live demo-key search, nutrient mapping, energy selection, missing nutrients, mass/volume/label portions, invalid inputs, error messages, and encrypted key persistence.
+PASS: USDA UI fixture search -> select -> 150g -> autofill -> save -> exact persisted macros.
+Personal USDA key registration remains a user step; DEMO_KEY works immediately.
+Run test.ps1 -LiveUsda to include the public network check.
+
+Quantity and time update:
+PASS: 20 quantity, time, portion, favorite, CSV, migration, and restore checks.
+PASS: 27 core integration checks.
+PASS: 19 USDA checks including live search and live whole-egg portion lookup.
+PASS: actual UI creation of 2 eggs at 8:15 AM, editing to 3 eggs at 7:10 PM, one entry and correct totals.
+PASS: USDA search/autofill/save UI still produces the expected macros with the new quantity model.
+User's existing application and diary were not modified; tests used isolated files.

@@ -1,0 +1,32 @@
+name: Build and release Windows app
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build app, updater, setup and ZIP
+        shell: pwsh
+        run: ./package.ps1
+      - name: Test core behavior and update safety
+        shell: pwsh
+        run: ./ci-test.ps1
+      - name: Validate tag and publish complete release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          REF_NAME: ${{ github.ref_name }}
+          REF_TYPE: ${{ github.ref_type }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          $version = ([Reflection.AssemblyName]::GetAssemblyName((Join-Path $PWD 'MacroTracker.exe'))).Version
+          $tag = 'v' + $version.ToString(3)
+          if ($env:REF_TYPE -eq 'tag' -and $env:REF_NAME -ne $tag) { throw 'Tag does not match ReleaseInfo.cs.' }
+          gh release create $tag dist/MacroTracker-Setup.exe dist/MacroTracker-Windows-x64.zip dist/SHA256SUMS.txt --target $env:COMMIT_SHA --title "Macro Tracker $tag" --notes-file RELEASE-NOTES.md
+          if ($LASTEXITCODE -ne 0) { throw 'Release publishing failed.' }

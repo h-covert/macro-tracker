@@ -1,0 +1,15 @@
+*.exe
+*.pdb
+*.db
+*.db-*
+*.bak
+*.usda-key*
+*.log
+*.csv
+*.png
+dist/
+work/
+bin/
+obj/
+.vs/
+test-error.txt
