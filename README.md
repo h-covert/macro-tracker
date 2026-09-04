@@ -8,9 +8,9 @@ Download **MacroTracker-Setup.exe** from [the latest release](https://github.com
 
 Requires Windows 10/11 x64 and .NET Framework 4.8. SQLite is supplied by Windows. This build is unsigned.
 
-**Setup issue under investigation:** A v1.3.0 installation reported a generic invocation error alongside an antivirus alert. The underlying failure and detection have not yet been identified. If you receive a security alert, stop installation and ask your IT/security team to review it; do not disable protection or add an exclusion. An antivirus detection must not be treated as an ordinary downloaded-app prompt or assumed to be a false positive.
+Version 1.3.1 replaces reflected Windows scripting calls with the native Windows Shell shortcut API. Optional Desktop/Start-menu shortcut or existing startup-entry failures show specific warnings without treating copied application files as a failed installation. When optional steps fail, setup reports the installed location and does not start the app automatically. Running setup again repairs program files and retries shortcuts; diary data and the USDA key are preserved.
 
-The source now reports the failing setup step and underlying exception, with a local `MacroTracker-setup-error-*.log` in the Windows temporary folder when writable. This diagnostic change is not included in the v1.3.0 download and does not resolve or certify the antivirus alert. Logs can contain Windows account names and local paths; review them before sharing. No replacement installer has been released for this issue yet.
+Setup reports the failing step and underlying exception, with local `MacroTracker-setup-error-*.log` or `MacroTracker-setup-warning-*.log` files in the Windows temporary folder when writable. Logs can contain Windows account names and local paths; review them before sharing. An antivirus alert reported during a v1.3.0 installation remains undiagnosed; these installer changes do not certify antivirus compatibility or change security settings.
 
 ## Future updates: no reinstall
 
