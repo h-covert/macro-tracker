@@ -40,7 +40,7 @@ public sealed class Database : IDisposable {
     }
     public void Dispose() { if(handle!=IntPtr.Zero) { sqlite3_close(handle); handle=IntPtr.Zero; } }
 }
-public sealed class Store : IDisposable {
+public sealed partial class Store : IDisposable {
     public readonly string Path; public Database Db;
     public static readonly string[] MacroNames={"Calories","Protein","Carbs","Fat"};
     public static readonly string[] Categories={"Breakfast","Lunch","Dinner","Snack","Drink","Other"};
@@ -51,7 +51,8 @@ public sealed class Store : IDisposable {
         Path=path; Directory.CreateDirectory(System.IO.Path.GetDirectoryName(path)); Db=new Database(path);
         if(Db.Query("SELECT name FROM sqlite_master WHERE type='table' AND name='settings'").Count>0 && Get("schema","")=="1")
             Backup(path+".before-quantity-upgrade.bak");
-        Initialize();
+        if(Db.Query("SELECT name FROM sqlite_master WHERE type='table' AND name='foods'").Count>0 && Db.Query("SELECT name FROM sqlite_master WHERE type='table' AND name='library'").Count==0) Backup(path+".before-library-upgrade.bak");
+        Initialize(); InitializeLibrary();
     }
     void Initialize() {
         Db.Query("PRAGMA foreign_keys=ON"); Db.Query("PRAGMA journal_mode=DELETE");
@@ -78,8 +79,8 @@ public sealed class Store : IDisposable {
     public string Get(string key,string fallback) {var r=Db.Query("SELECT value FROM settings WHERE key=?",key); return r.Count==0?fallback:r[0]["value"];}
     public void Set(string key,string value) {Db.Query("INSERT OR REPLACE INTO settings(key,value) VALUES(?,?)",key,value);}
     public double[] Defaults() {return Get("targets","2450|190|240|75").Split('|').Select(Num).ToArray();}
-    public void EnsureDay(DateTime date) {var t=Defaults(); Db.Query("INSERT OR IGNORE INTO days VALUES(?,?,?,?,?)",Day(date),t[0],t[1],t[2],t[3]);}
-    public double[] Targets(DateTime date) {var r=Db.Query("SELECT * FROM days WHERE day=?",Day(date)); return r.Count==0?Defaults():Values(r[0]);}
+    public void EnsureDay(DateTime date) {bool fresh=Db.Query("SELECT day FROM days WHERE day=?",Day(date)).Count==0;var t=ScheduledTargets(date); Db.Query("INSERT OR IGNORE INTO days VALUES(?,?,?,?,?)",Day(date),t[0],t[1],t[2],t[3]);if(fresh){var type=Db.Query("SELECT preset FROM schedule WHERE weekday=?",(int)date.DayOfWeek);Set("daytype:"+Day(date),type.Count==0?"Default":type[0]["preset"]);}}
+    public double[] Targets(DateTime date) {var r=Db.Query("SELECT * FROM days WHERE day=?",Day(date)); return r.Count==0?ScheduledTargets(date):Values(r[0]);}
     public static double[] Values(Dictionary<string,string> r) {return new[]{Num(r["calories"]),Num(r["protein"]),Num(r["carbs"]),Num(r["fat"])};}
     public double[] Totals(DateTime date) {return Values(Db.Query("SELECT coalesce(sum(calories),0) calories,coalesce(sum(protein),0) protein,coalesce(sum(carbs),0) carbs,coalesce(sum(fat),0) fat FROM foods WHERE day=?",Day(date))[0]);}
     public void SaveTargets(double[] values,bool today) {Validate(values,true); Db.Transaction(delegate {Set("targets",string.Join("|",values.Select(v=>v.ToString(CultureInfo.InvariantCulture)))); if(today) Db.Query("UPDATE days SET calories=?,protein=?,carbs=?,fat=? WHERE day=?",values[0],values[1],values[2],values[3],Day(DateTime.Today));});}
@@ -118,7 +119,8 @@ public sealed class Store : IDisposable {
             if(source.Query("PRAGMA foreign_key_check").Count!=0)throw new IOException("This backup has invalid food history references.");
             Backup(Path+".before-restore.bak"); source.CopyTo(Db);
         }
-        Initialize(); // Also upgrades schema-1 backups while preserving their original totals.
+        if(Db.Query("SELECT name FROM sqlite_master WHERE type='table' AND name='foods'").Count>0 && Db.Query("SELECT name FROM sqlite_master WHERE type='table' AND name='library'").Count==0) Backup(path+".before-library-upgrade.bak");
+        Initialize(); InitializeLibrary(); // Also upgrades schema-1 backups while preserving their original totals.
     }
     public void Export(string path,bool weights,string unit) {
         var r=Db.Query(weights?"SELECT day,kg FROM weights ORDER BY day":"SELECT day,time,name,calories,protein,carbs,fat,category,serving,notes,quantity FROM foods ORDER BY day,time");

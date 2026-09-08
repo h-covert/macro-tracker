@@ -1,0 +1,8 @@
+Version 1.4.0 verification
+
+- Existing core, portion/migration, updater integrity/rollback and native installer test suites passed.
+- Fifteen additional data checks passed: Sunday boundaries, schedule/preset snapshots, day overrides, recipe grams scaling, independent copies, completion invalidation, invalid quantity rejection, label parsing including zero/missing/ambiguous values, and library backup/restore.
+- UI automation exercised actual recipe creation and scaled logging, label text extraction and reviewed favorite save, preset save, weekly check-in save, and all three theme switches.
+- Windows OCR recognized a locally generated nutrition label. Some digits were misread as letters and therefore left blank by the parser for user correction. No cloud request was used.
+- All new navigation screens rendered using isolated test data.
+- No personal diary or USDA credentials used in tests.

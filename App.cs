@@ -14,21 +14,21 @@ public static class Program {
         bool test=args.Contains("--self-test"), smoke=args.Contains("--smoke"), reopen=args.Contains("--verify-persistence");
         string data=System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"MacroTracker","macro-tracker.db");
         int index=Array.IndexOf(args,"--data");if(index>=0 && index+1<args.Length)data=System.IO.Path.GetFullPath(args[index+1]);
-        if((test||smoke||reopen||args.Contains("--usda-test")||args.Contains("--usda-ui")||args.Contains("--portion-test")||args.Contains("--portion-ui")||args.Contains("--update-test"))&&index<0) {File.WriteAllText("test-error.txt","Tests require --data with an isolated database path.");return 2;}
+        if((test||smoke||reopen||args.Contains("--usda-test")||args.Contains("--usda-ui")||args.Contains("--portion-test")||args.Contains("--portion-ui")||args.Contains("--update-test")||args.Contains("--feature-test")||args.Contains("--feature-ui"))&&index<0) {File.WriteAllText("test-error.txt","Tests require --data with an isolated database path.");return 2;}
         bool created;using(var mutex=new Mutex(true,"Local\\MacroTracker-"+StableHash(data),out created)) {
             if(!created){MessageBox.Show("Macro Tracker is already running. Open it from the system tray.","Macro Tracker");return 0;}
             try {
-                if(args.Contains("--update-test")){UpdateTests.Run(data);return 0;} if(args.Contains("--portion-test")){PortionTests.Run(data);return 0;} if(args.Contains("--usda-test")){UsdaTests.Run(data,args.Contains("--live"));return 0;} if(test){Tests.Run(data);return 0;}
+                if(args.Contains("--feature-test")){FeatureTests.Run(data);return 0;} if(args.Contains("--update-test")){UpdateTests.Run(data);return 0;} if(args.Contains("--portion-test")){PortionTests.Run(data);return 0;} if(args.Contains("--usda-test")){UsdaTests.Run(data,args.Contains("--live"));return 0;} if(test){Tests.Run(data);return 0;}
                 if(reopen){Tests.Reopen(data);return 0;}
                 using(var store=new Store(data)) {
                     var app=new Application{ShutdownMode=ShutdownMode.OnMainWindowClose};
                     app.DispatcherUnhandledException+=delegate(object sender,DispatcherUnhandledExceptionEventArgs e){File.AppendAllText(data+".errors.log",DateTime.Now+" "+e.Exception+Environment.NewLine);MessageBox.Show("Something went wrong. Your saved data remains on this device.\n\n"+e.Exception.Message,"Macro Tracker");e.Handled=true;};
-                    var window=new MainWindow(store,smoke||args.Contains("--usda-ui")||args.Contains("--portion-ui"));app.MainWindow=window;
-                    window.Loaded+=delegate {window.CheckUpdatesOnOpen();if(args.Contains("--tray")&&store.Get("setup","")=="1")window.Hide();if(args.Contains("--portion-ui"))PortionTests.Smoke(window,store);if(smoke)Tests.Smoke(window,store);if(args.Contains("--usda-ui"))UsdaTests.Smoke(window,store);};
+                    var window=new MainWindow(store,smoke||args.Contains("--feature-ui")||args.Contains("--usda-ui")||args.Contains("--portion-ui"));app.MainWindow=window;
+                    window.Loaded+=delegate {if(!args.Contains("--feature-ui"))window.CheckUpdatesOnOpen();if(args.Contains("--feature-ui"))FeatureUiTests.Run(window,store);if(args.Contains("--tray")&&store.Get("setup","")=="1")window.Hide();if(args.Contains("--portion-ui"))PortionTests.Smoke(window,store);if(smoke)Tests.Smoke(window,store);if(args.Contains("--usda-ui"))UsdaTests.Smoke(window,store);};
                     app.Run(window);
                 }
                 return 0;
-            } catch(Exception e) {Directory.CreateDirectory(System.IO.Path.GetDirectoryName(data));File.WriteAllText(data+".errors.log",e.ToString());if(!test&&!smoke&&!args.Contains("--usda-test")&&!args.Contains("--usda-ui")&&!args.Contains("--portion-test")&&!args.Contains("--portion-ui")&&!args.Contains("--update-test"))MessageBox.Show("Macro Tracker couldn't start.\n\n"+e.Message+"\n\nDetails: "+data+".errors.log","Macro Tracker");return 1;}
+            } catch(Exception e) {Directory.CreateDirectory(System.IO.Path.GetDirectoryName(data));File.WriteAllText(data+".errors.log",e.ToString());if(!test&&!smoke&&!args.Contains("--usda-test")&&!args.Contains("--usda-ui")&&!args.Contains("--portion-test")&&!args.Contains("--portion-ui")&&!args.Contains("--update-test")&&!args.Contains("--feature-test"))MessageBox.Show("Macro Tracker couldn't start.\n\n"+e.Message+"\n\nDetails: "+data+".errors.log","Macro Tracker");return 1;}
         }
     }
     static string StableHash(string s) {uint hash=2166136261;foreach(char c in s.ToUpperInvariant()){hash^=c;hash*=16777619;}return hash.ToString("X8");}
@@ -72,7 +72,7 @@ public static class Tests {
         File.WriteAllText(path+".results.txt","PASS: "+checks+" integration checks.\r\nIncludes database reopen, totals, edit/delete, new day, history, target snapshots, favorites/recent, reminders/snooze, weight, CSV, backup/restore, and invalid input.\r\n");
     }
     public static void Smoke(MainWindow window,Store s) {
-        string folder=System.IO.Path.GetDirectoryName(s.Path);var timer=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(650)};int stage=0;string[] pages={"Welcome","Dashboard","Food Log","History","Weight","Settings"};
+        string folder=System.IO.Path.GetDirectoryName(s.Path);var timer=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(650)};int stage=0;string[] pages={"Welcome","Dashboard","Food Log","Library","Day Targets","Check-In","History","Weight","Settings"};
         timer.Tick+=delegate {try {
             if(stage==0){s.Set("setup","1");s.SaveFood(null,DateTime.Today,"Chicken & rice",new double[]{650,55,70,15},"Lunch","1 bowl","","12:30:00");s.SaveFood(null,DateTime.Today,"Greek yogurt & berries",new double[]{260,25,30,5},"Breakfast","1 bowl","","08:00:00");s.SaveFood(null,DateTime.Today,"Protein shake",new double[]{160,30,5,2},"Snack","1 scoop","","15:00:00");s.Favorite(s.Foods(DateTime.Today)[0]);for(int i=0;i<9;i++)s.Db.Query("INSERT OR REPLACE INTO weights VALUES(?,?)",Store.Day(DateTime.Today.AddDays(-i)),82+i*0.12);}
             if(stage<pages.Length){window.Navigate(pages[stage]);window.UpdateLayout();Capture(window,System.IO.Path.Combine(folder,pages[stage].Replace(" ","")+".png"));stage++;return;}

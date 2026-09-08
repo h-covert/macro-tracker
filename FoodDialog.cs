@@ -67,6 +67,7 @@ public sealed partial class MainWindow {
             try {
                 var total=FoodPortion.Scale(fields.Select(x=>Number(x,false)).ToArray(),ReadQuantity(quantity));
                 preview.Text="TOTAL FOR "+quantity.Text+" × "+serving.Text+"\n"+Store.F(total[0])+" kcal   ·   P "+Store.F(total[1])+"g   ·   C "+Store.F(total[2])+"g   ·   F "+Store.F(total[3])+"g";
+                var remaining=store.Targets(date);var logged=store.Totals(date);var previous=edit?Store.Values(entry):new double[4];preview.Text+="\nAfter saving: "+string.Join(" · ",Enumerable.Range(0,4).Select(i=>Store.F(remaining[i]-logged[i]+previous[i]-total[i])+(i==0?" kcal": "g "+Store.MacroNames[i])+" left"));
             } catch(ArgumentException) {preview.Text="Enter a valid quantity and all four per-item macro values to see the total.";}
         };
         foreach(var field in fields)field.TextChanged+=delegate{update();};quantity.TextChanged+=delegate{update();};serving.TextChanged+=delegate{update();};update();

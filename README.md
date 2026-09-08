@@ -22,13 +22,27 @@ Settings → **App updates** offers a manual check and a switch for automatic ch
 
 The first setup adds this capability to older portable versions. After that, use the installed shortcut and in-app updates. No need to run setup for each release.
 
+## New in 1.4.0
+
+Open **Library** for History, Favorites, Saved Meals, Recipes, Snacks, and Drinks. Copy an entry to any date/time, select several diary foods to save together, or create a recipe with individual USDA/custom ingredients. A recipe stores a complete batch with a serving count and optional finished weight. Logging a portion scales every ingredient and creates independent diary copies. Recipe edits never rewrite earlier diary entries.
+
+Open **Day Targets** to save named presets, assign them Sunday through Saturday, and apply explicit single-day overrides. A schedule applies when a day's targets are first saved; existing days keep their target snapshots. Use the override to change today after editing a schedule. Training/rest presets are user-defined; the app does not guess appropriate nutrition targets.
+
+**Library → Scan nutrition label** accepts an image file, pasted image, or pasted text. Windows OCR runs locally through Windows PowerShell with the installed OCR language. No internet, external AI account, or extra API key is required. Review the source beside extracted calories, protein, total carbs and total fat. Missing/ambiguous values remain blank; correct them and confirm before saving to Favorites. English labels are supported. Fiber, sugar, sodium and servings per container are saved as notes; they are not separate tracked daily nutrients. OCR can misread characters and multi-column labels: verify the per-serving basis. If OCR is unavailable or blocked by local policy, the editable text review remains available.
+
+On the **Dashboard**, mark each logged day complete when finished. Later food changes reopen the day. The new weekly chart and **Check-In** use completed days for averages/highest/lowest; partial days remain visible as faded bars. Check-In reviews the week before the selected date's week, with macros, target results, day-type comparisons, weight averages/trend, hunger, energy, workout performance, notes and next week's focus. Reviews are saved by week and can be reopened. No automatic target adjustments are made.
+
+**Settings → Color theme** offers Graphite, Purple, and White / Red / Blue. The dashboard uses separate outer Protein, middle Carbs and inner Fat rings. The dotted calorie goal follows each day's saved or scheduled target. Add-food previews show projected remaining macros before saving.
+
+The first upgrade from the earlier database creates `.before-library-upgrade.bak`. Full database backups include saved recipes, schedules and check-ins. USDA credentials retain their existing separate storage.
+
 ## Daily use
 
 - **Dashboard:** calories, protein, carbs, and fat consumed/target/remaining.
 - **Add food / Ctrl+N:** enter a food or select **Search USDA foods**. Missing nutrients stay blank for review. Save favorites for offline reuse.
 - **Quantity:** macros are entered for one item/serving; quantity scales the total. For two eggs, define `1 whole egg` with per-egg macros and quantity `2`. USDA household portions such as `1 large` are offered where available.
 - **Time eaten:** editable for new and existing entries. Accepts `8:15 AM`, `7:10 PM`, or `19:10`. The log sorts by meal time. Use the date picker for another day.
-- **History:** daily results and Monday–Sunday averages using days with food entries. Empty days don't count as successes; today's partial log is included.
+- **History:** daily results and Sunday–Saturday averages using days with food entries. Empty days don't count as successes; today's partial log is included.
 - **Weight:** optional lb/kg entries, latest/previous, a seven-calendar-day mean using recorded weigh-ins, and a 30-entry trend. Weight storage/CSV use kg.
 
 Calories are independent of macros, including for drinks. Defaults are 2,450 kcal / 190g protein / 240g carbs / 75g fat. Existing days retain their target snapshots when defaults change. A new day starts empty without deleting history. Adding food on a previously unrecorded past date uses the current defaults.
