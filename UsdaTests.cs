@@ -44,7 +44,7 @@ public static class UsdaTests {
         if(live) {
             var egg=new UsdaFood{Id="173424",Type="SR Legacy",BasisUnit="g"};
             new UsdaClient().LoadPortions(egg,"DEMO_KEY",CancellationToken.None).GetAwaiter().GetResult();
-            var large=egg.Portions.FirstOrDefault(p=>p.Label=="1 large");
+            var large=egg.Portions.FirstOrDefault(p=>p.Label=="Large");
             Check(large!=null&&egg.BaseAmount(2,large.Display)==100,"live USDA whole-egg portion lookup");
         }
         File.WriteAllText(path+".usda-results.txt","PASS: "+count+" USDA checks"+(live?", including live demo-key search and egg portion lookup.":" (offline fixtures)."));
@@ -52,7 +52,7 @@ public static class UsdaTests {
     static IEnumerable<DependencyObject> All(DependencyObject root) {for(int i=0;i<VisualTreeHelper.GetChildrenCount(root);i++){var child=VisualTreeHelper.GetChild(root,i);yield return child;foreach(var d in All(child))yield return d;}}
     static T Named<T>(Window w,string name) where T:FrameworkElement {return All(w).OfType<T>().First(x=>x.Name==name);}
     public static void Smoke(MainWindow window,Store store) {
-        window.UsdaTestSearch=delegate(string q,string scope,CancellationToken token){return Task.FromResult(Foods());};
+        window.UsdaTestSearch=delegate(string q,string scope,CancellationToken token){var foods=Foods();foods[0].Portions.Add(new UsdaPortion{Label="Cup",Grams=80,DefaultAmount=0.5});return Task.FromResult(foods);};
         var timer=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(450)};int step=0;
         timer.Tick+=delegate {
             try {
@@ -60,7 +60,7 @@ public static class UsdaTests {
                 var dialog=Application.Current.Windows.Cast<Window>().Last(w=>w!=window);
                 if(step==1){step++;window.Dispatcher.BeginInvoke(new Action(delegate{All(dialog).OfType<Button>().First(b=>Convert.ToString(b.Content)=="Search USDA foods").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));}));return;}
                 if(step==2){Named<TextBox>(dialog,"UsdaQuery").Text="yogurt";step++;Named<Button>(dialog,"UsdaSearch").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));return;}
-                if(step==3){Named<ListBox>(dialog,"UsdaResults").SelectedIndex=0;Named<TextBox>(dialog,"UsdaAmount").Text="150";dialog.UpdateLayout();var visual=(FrameworkElement)dialog.Content;var bmp=new RenderTargetBitmap((int)visual.ActualWidth,(int)visual.ActualHeight,96,96,PixelFormats.Pbgra32);bmp.Render(visual);var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(bmp));using(var f=File.Create(store.Path+".search.png"))png.Save(f);step++;Named<Button>(dialog,"UsdaUse").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));return;}
+                if(step==3){Named<ListBox>(dialog,"UsdaResults").SelectedIndex=0;var units=Named<ComboBox>(dialog,"UsdaUnits");units.SelectedItem="Cup";double selectedAmount;Check(double.TryParse(Named<TextBox>(dialog,"UsdaAmount").Text,NumberStyles.Float,CultureInfo.CurrentCulture,out selectedAmount)&&selectedAmount==0.5,"UI separates USDA portion amount from Cup unit");dialog.UpdateLayout();var visual=(FrameworkElement)dialog.Content;var bmp=new RenderTargetBitmap((int)visual.ActualWidth,(int)visual.ActualHeight,96,96,PixelFormats.Pbgra32);bmp.Render(visual);var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(bmp));using(var f=File.Create(store.Path+".serving.png"))png.Save(f);units.SelectedItem="g";Named<TextBox>(dialog,"UsdaAmount").Text="150";step++;Named<Button>(dialog,"UsdaUse").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));return;}
                 if(step==4){step++;All(dialog).OfType<Button>().First(b=>b.IsDefault).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));return;}
             }catch(Exception e){timer.Stop();File.WriteAllText(store.Path+".usda-ui-error.txt",e.ToString());window.Exit();}
         };

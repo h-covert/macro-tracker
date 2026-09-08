@@ -40,8 +40,9 @@ public static class PortionTests {
             store.Backup(path+".backup");store.Db.Query("DELETE FROM foods");store.Restore(path+".backup");Check(FoodPortion.Quantity(store.Foods(date)[0])==3,"backup restore retains quantity");
         }
         using(var store=new Store(path))Check(FoodPortion.Quantity(store.Foods(date)[0])==3&&store.Foods(date)[0]["time"]=="18:45:00","quantity and edited time persist on reopen");
-        var portions=UsdaClient.ParsePortions("{\"foodPortions\":[{\"gramWeight\":50,\"amount\":1,\"modifier\":\"large\"},{\"gramWeight\":0,\"amount\":1,\"modifier\":\"invalid\"}]}");
-        var egg=new UsdaFood{BasisUnit="g",Portions=portions};Check(portions.Count==1&&egg.BaseAmount(2,portions[0].Display)==100,"two USDA large eggs use sourced gram weight");
+        var portions=UsdaClient.ParsePortions("{\"foodPortions\":[{\"gramWeight\":50,\"amount\":1,\"modifier\":\"large\"},{\"gramWeight\":40,\"amount\":0.5,\"modifier\":\"cup (1 NLEA serving)\"},{\"gramWeight\":0,\"amount\":1,\"modifier\":\"invalid\"}]}");
+        var egg=new UsdaFood{BasisUnit="g",Portions=portions};Check(portions.Count==2&&egg.BaseAmount(2,"Large")==100,"two USDA large eggs use sourced gram weight");
+        var cup=portions.First(p=>p.Display=="Cup");Check(cup.DefaultAmount==0.5&&egg.BaseAmount(0.5,"Cup")==40,"USDA cup keeps amount separate from unit and preserves conversion");
         CreateLegacy(path+".old");
         using(var upgraded=new Store(path+".old")) {
             Check(File.Exists(path+".old.before-quantity-upgrade.bak"),"pre-upgrade safety backup");

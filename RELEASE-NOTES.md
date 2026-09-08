@@ -1,8 +1,7 @@
-Macro Tracker 1.4.2 softens the app's edges across all three themes.
+Macro Tracker 1.4.3 improves the dashboard and USDA serving controls.
 
-- Inset sidebar with rounded corners and space around the window interior.
-- More rounded cards and buttons.
-- Rounded text fields, dropdowns and dropdown menus that follow the selected theme.
-- Requests native rounded corners and a matching light/dark title bar where Windows supports them. Windows controls the outer window radius and maximized-window appearance.
+- Centers calorie totals and remaining calories inside the macro rings.
+- Keeps USDA serving amounts separate from measurement units: for example, `0.5` in Amount and `Cup` in Unit.
+- Preserves USDA gram conversions when changing the serving amount.
 
 Update through Settings → App updates → Check for updates → Download update.

@@ -84,7 +84,7 @@ public sealed partial class MainWindow {
                 catch(Exception e){if(!closed&&picked==loading)message.Text=e.Message;}
             }
         };
-        amount.TextChanged+=delegate{update();};units.SelectionChanged+=delegate{update();};
+        string previousUnit=null;amount.TextChanged+=delegate{update();};units.SelectionChanged+=delegate{string selectedUnit=units.SelectedItem as string;var portion=picked==null||selectedUnit==null?null:picked.Portions.FirstOrDefault(x=>x.Display==selectedUnit);if(portion!=null&&selectedUnit!=previousUnit)amount.Text=FoodPortion.Precise(portion.DefaultAmount);previousUnit=selectedUnit;update();};
         Func<Task> run=async delegate {
             if(busy)return;busy=true;search.IsEnabled=false;results.Items.Clear();message.Text="Searching USDA…";
             try {

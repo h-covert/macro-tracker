@@ -10,12 +10,14 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
+using System.Text.RegularExpressions;
 
 namespace MacroTracker {
     public sealed class UsdaPortion {
         public string Label;
         public double Grams;
-        public string Display {get{return Label+" ("+FoodPortion.Precise(Grams)+" g)";}}
+        public double DefaultAmount=1;
+        public string Display {get{return Label;}}
     }
     public sealed class UsdaFood {
         public string Id, Name, Brand, Type, BasisUnit;
@@ -94,19 +96,26 @@ namespace MacroTracker {
                     var grams=Number(row,"gramWeight");if(!grams.HasValue||grams.Value<=0||grams.Value>100000)continue;
                     string modifier=Text(row,"modifier");string description=Text(row,"portionDescription");
                     double amount=Number(row,"amount")??1;if(amount<=0)continue;
-                    string label=modifier==""?description:FoodPortion.Precise(amount)+" "+modifier;
+                    string label=modifier==""?description:modifier;
                     if(label=="") {
                         object measure; if(row.TryGetValue("measureUnit",out measure)&&measure is Dictionary<string,object>) {
                             string unit=Text((Dictionary<string,object>)measure,"name");
-                            if(unit!=""&&unit!="undetermined")label=FoodPortion.Precise(amount)+" "+unit;
+                            if(unit!=""&&unit!="undetermined")label=unit;
                         }
                     }
+                    label=PortionUnit(label);
                     if(label=="")continue;
-                    var portion=new UsdaPortion{Label=label,Grams=grams.Value};
+                    var portion=new UsdaPortion{Label=label,Grams=grams.Value/amount,DefaultAmount=amount};
                     if(!portions.Any(p=>p.Display==portion.Display))portions.Add(portion);
                 }
                 return portions;
             }catch{throw new InvalidOperationException("USDA portion sizes weren't readable. You can still use grams or ounces.");}
+        }
+        static string PortionUnit(string value) {
+            value=Regex.Replace(value??"",@"\s*\([^)]*NLEA[^)]*\)","",RegexOptions.IgnoreCase);
+            value=Regex.Replace(value,@"^\s*(?:\d+(?:\.\d+)?|\d+\s*/\s*\d+)\s+","",RegexOptions.IgnoreCase).Trim();
+            value=Regex.Replace(value,@"^(cups|tablespoons|teaspoons|ounces|slices|pieces)\b",delegate(Match m){return m.Value.Substring(0,m.Value.Length-1);},RegexOptions.IgnoreCase);
+            return value.Length==0?"":char.ToUpperInvariant(value[0])+value.Substring(1);
         }
         public async Task<List<UsdaFood>> Search(string query,string scope,string key,CancellationToken cancellation) {
             query=(query??"").Trim();
