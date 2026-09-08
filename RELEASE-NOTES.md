@@ -1,6 +1,7 @@
-Macro Tracker 1.4.5 makes the manual update control easier to see.
+Macro Tracker 1.4.6 fixes blank integrated-camera previews during nutrition-label scanning.
 
-- Displays Check for updates as a filled accent button.
-- Uses each selected theme's accent and contrasting text colors.
+- Replaces the legacy WDM/Win32 preview that could turn on a laptop camera without displaying video.
+- Opens the built-in Windows Camera app and detects its newly saved Camera Roll photo.
+- Returns the captured photo to Macro Tracker's existing local OCR review.
 
 Update through Settings → App updates → Check for updates → Download update.

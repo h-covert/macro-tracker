@@ -2,41 +2,46 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Forms.Integration;
-using System.Windows.Media;
+using System.Windows.Threading;
+using Microsoft.Win32;
 
 namespace MacroTracker {
 public static class CameraCapture {
-    const int WS_CHILD=0x40000000,WS_VISIBLE=0x10000000;
-    const uint WM_CAP_DRIVER_CONNECT=0x40A,WM_CAP_DRIVER_DISCONNECT=0x40B,WM_CAP_EDIT_COPY=0x41E,WM_CAP_SET_PREVIEW=0x432,WM_CAP_SET_PREVIEWRATE=0x434,WM_CAP_SET_SCALE=0x435,WM_CAP_GRAB_FRAME_NOSTOP=0x43D;
-    [DllImport("avicap32.dll",CharSet=CharSet.Ansi)] static extern IntPtr capCreateCaptureWindow(string title,int style,int x,int y,int width,int height,IntPtr parent,int id);
-    [DllImport("avicap32.dll",CharSet=CharSet.Ansi)] static extern bool capGetDriverDescription(int index,StringBuilder name,int nameSize,StringBuilder version,int versionSize);
-    [DllImport("user32.dll")] static extern IntPtr SendMessage(IntPtr window,uint message,IntPtr wParam,IntPtr lParam);
-    [DllImport("user32.dll")] static extern bool MoveWindow(IntPtr window,int x,int y,int width,int height,bool repaint);
-    [DllImport("user32.dll")] static extern bool DestroyWindow(IntPtr window);
+    static readonly string[] extensions={".jpg",".jpeg",".png",".bmp"};
+    static readonly Guid cameraRollId=new Guid("AB5FB87B-7CE2-4F83-915D-550846C9537B");
+    [DllImport("shell32.dll")] static extern int SHGetKnownFolderPath(ref Guid folder,int flags,IntPtr token,out IntPtr path);
 
-    sealed class Device {public int Index;public string Name;public override string ToString(){return Name;}}
-    static List<Device> Devices(){var devices=new List<Device>();for(int i=0;i<10;i++){var name=new StringBuilder(256);var version=new StringBuilder(256);if(capGetDriverDescription(i,name,name.Capacity,version,version.Capacity))devices.Add(new Device{Index=i,Name=name.Length==0?"Camera "+(i+1):name.ToString()});}return devices;}
+    static IEnumerable<string> CameraFolders() {
+        var folders=new List<string>();IntPtr native=IntPtr.Zero;Guid id=cameraRollId;
+        try{if(SHGetKnownFolderPath(ref id,0,IntPtr.Zero,out native)==0&&native!=IntPtr.Zero)folders.Add(Marshal.PtrToStringUni(native));}catch{}finally{if(native!=IntPtr.Zero)Marshal.FreeCoTaskMem(native);}
+        string pictures=Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),profile=Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        if(!string.IsNullOrWhiteSpace(pictures)){folders.Add(Path.Combine(pictures,"Camera Roll"));folders.Add(Path.Combine(pictures,"Pictures","Camera Roll"));}
+        if(!string.IsNullOrWhiteSpace(profile))folders.Add(Path.Combine(profile,"Pictures","Camera Roll"));
+        foreach(string variable in new[]{"OneDrive","OneDriveConsumer","OneDriveCommercial"}){string root=Environment.GetEnvironmentVariable(variable);if(!string.IsNullOrWhiteSpace(root))folders.Add(Path.Combine(root,"Pictures","Camera Roll"));}
+        return folders.Where(x=>!string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase);
+    }
+    static IEnumerable<string> Photos(IEnumerable<string> folders){foreach(string folder in folders){IEnumerable<string> files;try{files=Directory.Exists(folder)?Directory.EnumerateFiles(folder):new string[0];}catch{continue;}foreach(string file in files)if(extensions.Contains(Path.GetExtension(file),StringComparer.OrdinalIgnoreCase))yield return file;}}
+    static string Signature(string file){try{var info=new FileInfo(file);return info.Length+"|"+info.LastWriteTimeUtc.Ticks;}catch{return "";}}
+    public static Dictionary<string,string> Snapshot(IEnumerable<string> folders){var result=new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase);foreach(string file in Photos(folders))result[file]=Signature(file);return result;}
+    public static string FindNew(IEnumerable<string> folders,Dictionary<string,string> before){return Photos(folders).Select(file=>new{File=file,Signature=Signature(file),Time=File.GetLastWriteTimeUtc(file)}).Where(x=>x.Signature!=""&&(!before.ContainsKey(x.File)||before[x.File]!=x.Signature)).OrderByDescending(x=>x.Time).Select(x=>x.File).FirstOrDefault();}
 
     public static string Take(Window owner) {
-        string result=null;var devices=Devices();
-        var window=new Window{Title="Take a nutrition label photo",Owner=owner,Width=860,Height=680,MinWidth=640,MinHeight=500,Background=owner.Background,Foreground=owner.Foreground,Resources=owner.Resources,WindowStartupLocation=WindowStartupLocation.CenterOwner};
-        var root=new Grid{Margin=new Thickness(22)};root.RowDefinitions.Add(new RowDefinition{Height=GridLength.Auto});root.RowDefinitions.Add(new RowDefinition());root.RowDefinitions.Add(new RowDefinition{Height=GridLength.Auto});window.Content=root;
-        var top=new StackPanel();top.Children.Add(new TextBlock{Text="Position the full nutrition label inside the frame",FontSize=22,Foreground=owner.Foreground,Margin=new Thickness(0,0,0,8)});
-        var chooser=new ComboBox{ItemsSource=devices,SelectedIndex=devices.Count==0?-1:0,MinWidth=260,HorizontalAlignment=HorizontalAlignment.Left,Padding=new Thickness(8),Margin=new Thickness(0,0,0,12)};top.Children.Add(chooser);root.Children.Add(top);
-        var panel=new System.Windows.Forms.Panel{BackColor=System.Drawing.Color.Black};var host=new WindowsFormsHost{Child=panel,Margin=new Thickness(0,4,0,12)};Grid.SetRow(host,1);root.Children.Add(host);
-        var bottom=new StackPanel();Grid.SetRow(bottom,2);root.Children.Add(bottom);var status=new TextBlock{Text=devices.Count==0?"No Windows camera was found. Check camera privacy settings, then try again.":"Starting camera…",Foreground=owner.Foreground,TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,0,0,10)};bottom.Children.Add(status);
-        var actions=new StackPanel{Orientation=Orientation.Horizontal};bottom.Children.Add(actions);var captureButton=new Button{Content="Take photo",IsDefault=true,IsEnabled=false};var settingsButton=new Button{Content="Camera privacy settings"};var cancelButton=new Button{Content="Cancel",IsCancel=true};actions.Children.Add(captureButton);actions.Children.Add(settingsButton);actions.Children.Add(cancelButton);
-        IntPtr capture=IntPtr.Zero;Action disconnect=delegate{if(capture==IntPtr.Zero)return;SendMessage(capture,WM_CAP_DRIVER_DISCONNECT,IntPtr.Zero,IntPtr.Zero);DestroyWindow(capture);capture=IntPtr.Zero;captureButton.IsEnabled=false;};
-        Action connect=delegate{disconnect();var device=chooser.SelectedItem as Device;if(device==null)return;capture=capCreateCaptureWindow("Macro Tracker camera",WS_CHILD|WS_VISIBLE,0,0,Math.Max(1,panel.ClientSize.Width),Math.Max(1,panel.ClientSize.Height),panel.Handle,0);if(capture==IntPtr.Zero||SendMessage(capture,WM_CAP_DRIVER_CONNECT,new IntPtr(device.Index),IntPtr.Zero)==IntPtr.Zero){disconnect();status.Text="Windows could not open this camera. Close other camera apps or check camera privacy settings.";return;}SendMessage(capture,WM_CAP_SET_SCALE,new IntPtr(1),IntPtr.Zero);SendMessage(capture,WM_CAP_SET_PREVIEWRATE,new IntPtr(33),IntPtr.Zero);SendMessage(capture,WM_CAP_SET_PREVIEW,new IntPtr(1),IntPtr.Zero);captureButton.IsEnabled=true;status.Text="Hold the label steady, make the text fill the frame, then choose Take photo.";};
-        panel.Resize+=delegate{if(capture!=IntPtr.Zero)MoveWindow(capture,0,0,Math.Max(1,panel.ClientSize.Width),Math.Max(1,panel.ClientSize.Height),true);};chooser.SelectionChanged+=delegate{if(window.IsLoaded)connect();};
-        captureButton.Click+=delegate{try{if(capture==IntPtr.Zero)throw new InvalidOperationException("The camera is not ready.");SendMessage(capture,WM_CAP_GRAB_FRAME_NOSTOP,IntPtr.Zero,IntPtr.Zero);SendMessage(capture,WM_CAP_EDIT_COPY,IntPtr.Zero,IntPtr.Zero);using(var image=System.Windows.Forms.Clipboard.GetImage()){if(image==null)throw new IOException("Windows did not return a camera image. Try again or choose an existing image.");result=Path.Combine(Path.GetTempPath(),"MacroTracker-camera-"+Guid.NewGuid().ToString("N")+".png");image.Save(result,System.Drawing.Imaging.ImageFormat.Png);}window.DialogResult=true;}catch(Exception e){status.Text=e.Message;}};
-        settingsButton.Click+=delegate{try{Process.Start(new ProcessStartInfo("ms-settings:privacy-webcam"){UseShellExecute=true});}catch(Exception e){status.Text="Could not open camera privacy settings. "+e.Message;}};
-        window.ContentRendered+=delegate{if(devices.Count>0)connect();};window.Closed+=delegate{disconnect();};window.ShowDialog();return result;
+        var folders=CameraFolders().ToArray();var before=Snapshot(folders);string result=null,candidate=null;
+        var window=new Window{Title="Take a nutrition label photo",Owner=owner,Width=650,Height=360,MinWidth=560,MinHeight=320,Background=owner.Background,Foreground=owner.Foreground,Resources=owner.Resources,WindowStartupLocation=WindowStartupLocation.CenterOwner};
+        var root=new StackPanel{Margin=new Thickness(26)};window.Content=root;
+        root.Children.Add(new TextBlock{Text="Take a clear photo in Windows Camera",FontSize=24,Foreground=owner.Foreground,Margin=new Thickness(0,0,0,10)});
+        root.Children.Add(new TextBlock{Text="Keep the full nutrition label in the frame and press the Camera shutter. Return to Macro Tracker when the photo is saved.",FontSize=14,Foreground=owner.Foreground,TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,0,0,18)});
+        var status=new TextBlock{Text="Opening Windows Camera…",FontSize=14,Foreground=owner.Foreground,TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,0,0,18)};root.Children.Add(status);
+        var actions=new WrapPanel();root.Children.Add(actions);var use=new Button{Content="Use captured photo",IsDefault=true,IsEnabled=false};var reopen=new Button{Content="Open Camera again"};var choose=new Button{Content="Choose Camera Roll photo"};var cancel=new Button{Content="Cancel",IsCancel=true};actions.Children.Add(use);actions.Children.Add(reopen);actions.Children.Add(choose);actions.Children.Add(cancel);
+        Action refresh=delegate{candidate=FindNew(folders,before);if(candidate==null)return;use.IsEnabled=true;status.Text="Photo found: "+Path.GetFileName(candidate)+"\nChoose Use captured photo to scan it.";};
+        Action launch=delegate{try{Process.Start(new ProcessStartInfo("microsoft.windows.camera:"){UseShellExecute=true});status.Text="Windows Camera is open. Take the photo, then return here.";}catch(Exception e){status.Text="Windows Camera could not open. Use Choose Camera Roll photo or Choose image on the label page. "+e.Message;}};
+        use.Click+=delegate{refresh();if(candidate==null||!File.Exists(candidate)){status.Text="No new camera photo was found yet. Take a photo, wait for it to save, and try again.";return;}result=candidate;window.DialogResult=true;};
+        reopen.Click+=delegate{launch();};choose.Click+=delegate{var dialog=new OpenFileDialog{Title="Choose a camera photo",Filter="Label image|*.png;*.jpg;*.jpeg;*.bmp",InitialDirectory=folders.FirstOrDefault(Directory.Exists)};if(dialog.ShowDialog(window)==true){result=dialog.FileName;window.DialogResult=true;}};
+        var timer=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(750)};timer.Tick+=delegate{refresh();};window.Activated+=delegate{refresh();};window.ContentRendered+=delegate{timer.Start();launch();};window.Closed+=delegate{timer.Stop();};window.ShowDialog();return result;
     }
 }
 }
