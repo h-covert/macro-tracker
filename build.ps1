@@ -5,7 +5,7 @@ if (-not (Test-Path -LiteralPath $compiler)) { throw 'Install/enable .NET Framew
 $references = @('System.dll','System.Core.dll','System.IO.Compression.dll','System.IO.Compression.FileSystem.dll','System.Net.Http.dll','System.Web.Extensions.dll','System.Security.dll','System.Drawing.dll','System.Windows.Forms.dll','System.Xaml.dll','WPF\WindowsBase.dll','WPF\PresentationCore.dll','WPF\PresentationFramework.dll')
 $arguments = @('/nologo','/target:winexe','/platform:x64','/optimize+','/win32icon:app.ico','/out:MacroTracker.exe','/resource:LabelOcr.ps1,LabelOcr')
 $arguments += $references | ForEach-Object { '/reference:' + (Join-Path $framework $_) }
-$arguments += @('App.cs','LibraryStore.cs','LibraryViews.cs','IngredientEditor.cs','ModernDashboard.cs','LabelScan.cs','CameraCapture.cs','FeatureTests.cs','FeatureUiTests.cs','Store.cs','MainWindow.cs','SoftStyles.cs','Usda.cs','UsdaWindow.cs','UsdaTests.cs','FoodDialog.cs','FoodPortion.cs','PortionTests.cs','ReleaseInfo.cs','Updates.cs','UpdatePackage.cs','UpdateTests.cs')
+$arguments += @('App.cs','LibraryStore.cs','LibraryViews.cs','IngredientEditor.cs','ModernDashboard.cs','LabelScan.cs','CameraCapture.cs','FeatureTests.cs','FeatureUiTests.cs','Store.cs','MainWindow.cs','ReminderSettings.cs','SoftDatePicker.cs','SoftStyles.cs','Usda.cs','UsdaWindow.cs','UsdaTests.cs','FoodDialog.cs','FoodPortion.cs','PortionTests.cs','ReleaseInfo.cs','Updates.cs','UpdatePackage.cs','UpdateTests.cs')
 Push-Location $PSScriptRoot
 try {
     & $compiler @arguments

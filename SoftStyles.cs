@@ -9,7 +9,7 @@ namespace MacroTracker {
 public sealed partial class MainWindow {
  Border sidebarSurface;
  [DllImport("dwmapi.dll")] static extern int DwmSetWindowAttribute(IntPtr hwnd,int attribute,ref int value,int size);
- static void RoundWindow(Window window){var handle=new WindowInteropHelper(window).Handle;if(handle==IntPtr.Zero)return;int corner=2;DwmSetWindowAttribute(handle,33,ref corner,4);int dark=Ink.ToString()=="#FF14223B"?0:1;DwmSetWindowAttribute(handle,20,ref dark,4);}
+ internal static void RoundWindow(Window window){var handle=new WindowInteropHelper(window).Handle;if(handle==IntPtr.Zero)return;int corner=2;DwmSetWindowAttribute(handle,33,ref corner,4);int dark=Ink.ToString()=="#FF14223B"?0:1;DwmSetWindowAttribute(handle,20,ref dark,4);}
  void InstallSoftStyles(){
  Resources["SoftSurface"]=Bg;Resources["SoftInk"]=Ink;Resources["SoftBorder"]=Brush(Ink.ToString()=="#FF14223B"?"#D8E1EF":"#495063");Resources["SoftAccent"]=Green;
  var text=new Style(typeof(TextBox),(Style)Resources[typeof(TextBox)]);
