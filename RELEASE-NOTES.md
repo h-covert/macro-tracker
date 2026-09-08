@@ -1,7 +1,7 @@
-Macro Tracker 1.4.7 improves nutrition-label photo recognition.
+Macro Tracker 1.4.8 makes every Settings action clearly clickable.
 
-- Recognizes calorie numbers that Windows OCR places several lines after the Calories heading.
-- Corrects a common OCR error where the `g` in values such as `Protein 7g` is read as `0` or `9`.
-- Uses serving weight and calorie totals to avoid changing plausible two-digit protein values.
+- Gives Apply theme and Set up USDA search the selected theme's accent fill.
+- Applies the same visible treatment to target, reminder, export, backup, restore, and exit actions.
+- Verifies that Settings actions do not blend into their card background in Graphite, Purple, or White / Red / Blue.
 
 Update through Settings → App updates → Check for updates → Download update.

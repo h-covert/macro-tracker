@@ -17,7 +17,7 @@ public sealed partial class MainWindow {
     void UsdaSettingsCard() {
         var p=new StackPanel();p.Children.Add(Label("USDA food search",21,Ink));
         p.Children.Add(Label(new UsdaKey(store.Path).Personal ? "Personal API key saved on this Windows account." : "Ready to try with the USDA demo key. Add a free personal key for everyday use.",13,Muted));
-        p.Children.Add(Button("Set up USDA search",delegate{UsdaSetup(this);}));
+        p.Children.Add(Button("Set up USDA search",delegate{UsdaSetup(this);},true));
         content.Children.Add(Box(p));
     }
 
@@ -27,14 +27,14 @@ public sealed partial class MainWindow {
         var p=new StackPanel{Margin=new Thickness(26)};win.Content=new ScrollViewer{Content=p,Background=Bg,VerticalScrollBarVisibility=ScrollBarVisibility.Auto};
         p.Children.Add(Label("Food search, without the typing",25,Ink));
         p.Children.Add(Label("1. Get your free USDA key using the signup link.\n2. Paste it below and save.\n3. In Add food, choose Search USDA.",15,Muted));
-        p.Children.Add(Button("Get a free USDA API key ↗",delegate{Process.Start(new ProcessStartInfo("https://api.data.gov/signup/"){UseShellExecute=true});}));
+        p.Children.Add(Button("Get a free USDA API key ↗",delegate{Process.Start(new ProcessStartInfo("https://api.data.gov/signup/"){UseShellExecute=true});},true));
         p.Children.Add(Label("Personal API key (kept private on this Windows account)",12,Muted));
         var key=new PasswordBox{Height=42,Padding=new Thickness(10),Margin=new Thickness(0,8,0,12)};p.Children.Add(key);
         var state=Label(keys.Personal?"A key is already saved. Paste a new one only to replace it.":"Demo mode is active: 30 requests/hour, 50/day. No signup needed to try it.",13,Muted);p.Children.Add(state);
         var row=Row();row.Children.Add(Button("Save personal key",delegate{if(string.IsNullOrWhiteSpace(key.Password))throw new ArgumentException("Paste your key first, or choose Use demo key.");keys.Save(key.Password);key.Clear();state.Text="Personal key saved. Close this window and try a food search.";Notice("USDA key saved");},true));
-        row.Children.Add(Button("Use demo key",delegate{keys.Save("");key.Clear();state.Text="Demo mode active. You can search now.";}));p.Children.Add(row);
+        row.Children.Add(Button("Use demo key",delegate{keys.Save("");key.Clear();state.Text="Demo mode active. You can search now.";},true));p.Children.Add(row);
         p.Children.Add(Label("Search sends your food query to USDA over the internet. Your diary, weight, and targets stay local. Foods you save can be reused offline.",13,Muted));
-        p.Children.Add(Button("Done",delegate{win.Close();}));win.ShowDialog();
+        p.Children.Add(Button("Done",delegate{win.Close();},true));win.ShowDialog();
     }
 
     internal void SearchUsda(Window owner,Action<UsdaFood,double,string,double> use,string initial) {
