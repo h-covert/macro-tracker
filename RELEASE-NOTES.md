@@ -1,7 +1,7 @@
-Macro Tracker 1.4.3 improves the dashboard and USDA serving controls.
+Macro Tracker 1.4.4 adds direct nutrition-label camera capture.
 
-- Centers calorie totals and remaining calories inside the macro rings.
-- Keeps USDA serving amounts separate from measurement units: for example, `0.5` in Amount and `Cup` in Unit.
-- Preserves USDA gram conversions when changing the serving amount.
+- Adds an Access camera button to the nutrition-label review page.
+- Shows a live Windows camera preview and sends the captured photo directly to the existing local OCR review.
+- Offers camera selection and a direct link to Windows camera privacy settings when access is unavailable.
 
 Update through Settings → App updates → Check for updates → Download update.

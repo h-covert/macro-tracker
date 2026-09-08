@@ -28,7 +28,7 @@ Open **Library** for History, Favorites, Saved Meals, Recipes, Snacks, and Drink
 
 Open **Day Targets** to save named presets, assign them Sunday through Saturday, and apply explicit single-day overrides. A schedule applies when a day's targets are first saved; existing days keep their target snapshots. Use the override to change today after editing a schedule. Training/rest presets are user-defined; the app does not guess appropriate nutrition targets.
 
-**Library → Scan nutrition label** accepts an image file, pasted image, or pasted text. Windows OCR runs locally through Windows PowerShell with the installed OCR language. No internet, external AI account, or extra API key is required. Review the source beside extracted calories, protein, total carbs and total fat. Missing/ambiguous values remain blank; correct them and confirm before saving to Favorites. English labels are supported. Fiber, sugar, sodium and servings per container are saved as notes; they are not separate tracked daily nutrients. OCR can misread characters and multi-column labels: verify the per-serving basis. If OCR is unavailable or blocked by local policy, the editable text review remains available.
+**Library → Scan nutrition label** can take a photo directly from a Windows camera, choose an image file, paste an image, or accept pasted text. Camera capture shows a live preview, supports selecting an available camera, and sends the captured photo directly into the review. Windows OCR runs locally through Windows PowerShell with the installed OCR language. No internet, external AI account, or extra API key is required. Review the source beside extracted calories, protein, total carbs and total fat. Missing/ambiguous values remain blank; correct them and confirm before saving to Favorites. English labels are supported. Fiber, sugar, sodium and servings per container are saved as notes; they are not separate tracked daily nutrients. OCR can misread characters and multi-column labels: verify the per-serving basis. If the camera is unavailable, Choose image and Paste image remain available. If OCR is unavailable or blocked by local policy, the editable text review remains available.
 
 On the **Dashboard**, mark each logged day complete when finished. Later food changes reopen the day. The new weekly chart and **Check-In** use completed days for averages/highest/lowest; partial days remain visible as faded bars. Check-In reviews the week before the selected date's week, with macros, target results, day-type comparisons, weight averages/trend, hunger, energy, workout performance, notes and next week's focus. Reviews are saved by week and can be reopened. No automatic target adjustments are made.
 
@@ -98,7 +98,7 @@ The workflow rejects mismatched tags and doesn't overwrite an existing release. 
 | Files | Purpose |
 | --- | --- |
 | Store.cs | SQLite, migration, reminders, exports, backups |
-| MainWindow.cs, FoodDialog.cs, FoodPortion.cs | Screens, quantities, times, tray |
+| MainWindow.cs, FoodDialog.cs, FoodPortion.cs, CameraCapture.cs | Screens, quantities, times, camera capture, tray |
 | Usda.cs, UsdaWindow.cs | USDA client, portions, encrypted key storage |
 | Updates.cs, UpdatePackage.cs, UpdaterProgram.cs | Release checks, download, validation, replacement/rollback |
 | SetupProgram.cs, ReleaseInfo.cs | Per-user setup and version/repository constants |
