@@ -1,7 +1,7 @@
-Macro Tracker 1.4.6 fixes blank integrated-camera previews during nutrition-label scanning.
+Macro Tracker 1.4.7 improves nutrition-label photo recognition.
 
-- Replaces the legacy WDM/Win32 preview that could turn on a laptop camera without displaying video.
-- Opens the built-in Windows Camera app and detects its newly saved Camera Roll photo.
-- Returns the captured photo to Macro Tracker's existing local OCR review.
+- Recognizes calorie numbers that Windows OCR places several lines after the Calories heading.
+- Corrects a common OCR error where the `g` in values such as `Protein 7g` is read as `0` or `9`.
+- Uses serving weight and calorie totals to avoid changing plausible two-digit protein values.
 
 Update through Settings → App updates → Check for updates → Download update.
