@@ -91,7 +91,7 @@ public sealed partial class MainWindow {
         var p=new StackPanel();p.Children.Add(Label("App updates",21,Ink));p.Children.Add(Label("Version "+ReleaseInfo.Version+" · Updates from "+ReleaseInfo.Repository,13,Muted));
         var enabled=new CheckBox{Content="Check for updates when Macro Tracker opens",IsChecked=store.Get("check_updates","1")=="1"};
         enabled.Click+=delegate{Safe(delegate{store.Set("check_updates",enabled.IsChecked==true?"1":"0");});};p.Children.Add(enabled);
-        var check=Button("Check for updates",delegate{});check.Click+=async delegate{await CheckUpdates(true);};p.Children.Add(check);
+        var check=Button("Check for updates",delegate{},true);check.Name="CheckForUpdates";check.Click+=async delegate{await CheckUpdates(true);};p.Children.Add(check);
         p.Children.Add(Label("When an update is available, choose Download update. The app checks the download, applies it, and restarts. Your diary and API key stay in their data folder.",13,Muted));
         content.Children.Add(Box(p));
     }

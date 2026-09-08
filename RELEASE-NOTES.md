@@ -1,7 +1,6 @@
-Macro Tracker 1.4.4 adds direct nutrition-label camera capture.
+Macro Tracker 1.4.5 makes the manual update control easier to see.
 
-- Adds an Access camera button to the nutrition-label review page.
-- Shows a live Windows camera preview and sends the captured photo directly to the existing local OCR review.
-- Offers camera selection and a direct link to Windows camera privacy settings when access is unavailable.
+- Displays Check for updates as a filled accent button.
+- Uses each selected theme's accent and contrasting text colors.
 
 Update through Settings → App updates → Check for updates → Download update.
