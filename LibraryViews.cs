@@ -7,7 +7,7 @@ using System.Windows.Controls;
 using System.Web.Script.Serialization;
 namespace MacroTracker {
 public sealed partial class MainWindow {
- Window Form(string title,out StackPanel panel){var w=new Window{Title=title,Owner=this,Width=720,Height=700,MinWidth=550,MinHeight=450,Background=Bg,Foreground=Ink,Resources=Resources,WindowStartupLocation=WindowStartupLocation.CenterOwner};panel=new StackPanel{Margin=new Thickness(22)};w.Content=new ScrollViewer{Background=Bg,Content=panel,VerticalScrollBarVisibility=ScrollBarVisibility.Auto};return w;}
+ Window Form(string title,out StackPanel panel){var w=new Window{Title=title,Owner=this,Width=720,Height=700,MinWidth=550,MinHeight=450,Background=Bg,Foreground=Ink,Resources=Resources,WindowStartupLocation=WindowStartupLocation.CenterOwner};panel=new StackPanel{Margin=new Thickness(22)};w.SourceInitialized+=delegate{RoundWindow(w);};w.Content=new ScrollViewer{Background=Bg,Content=panel,VerticalScrollBarVisibility=ScrollBarVisibility.Auto};return w;}
  ComboBox Choose(StackPanel p,string title,IEnumerable<string> options,string current){p.Children.Add(Label(title,13,Muted));var c=new ComboBox{ItemsSource=options.ToArray(),SelectedItem=current,Padding=new Thickness(8),Margin=new Thickness(0,0,0,12)};p.Children.Add(c);return c;}
  void Library(){
  Heading("Food library","Save meals, recipes, snacks and drinks. Copies remain independently editable.");

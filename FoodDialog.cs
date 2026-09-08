@@ -19,7 +19,7 @@ public sealed partial class MainWindow {
             MinWidth=530,MinHeight=570,Owner=this,WindowStartupLocation=WindowStartupLocation.CenterOwner,
             Background=Bg,Foreground=Ink,FontFamily=FontFamily,Resources=Resources
         };
-        foodDialog=win;
+        win.SourceInitialized+=delegate{RoundWindow(win);};foodDialog=win;
         var root=new DockPanel{Margin=new Thickness(24)};win.Content=new Border{Background=Bg,Child=root};
         var footer=new StackPanel{Margin=new Thickness(0,12,0,0)};DockPanel.SetDock(footer,Dock.Bottom);root.Children.Add(footer);
         var preview=Label("",14,Green);footer.Children.Add(preview);
