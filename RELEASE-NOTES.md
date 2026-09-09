@@ -1,9 +1,7 @@
-Macro Tracker 1.5.0 introduces a cleaner, more informative dashboard.
+Macro Tracker 1.5.1 makes unfinished weekly calorie bars easier to recognize.
 
-- Moves page navigation beside the logo at the top and keeps dashboard date controls directly underneath.
-- Combines macro progress into one seamless ring while retaining detailed Protein, Carbs, and Fat bars.
-- Colors completed weekly calorie bars yellow when under goal, green within 100 calories, and red when over by more than 100; incomplete days stay gray.
-- Adds a meal-logging streak based on consecutive completed diary days, independent of calorie or macro goals.
-- Applies the redesigned dashboard and readable status colors across Graphite, Purple, and White / Red / Blue.
+- Adds a bright theme-accent outline to gray calorie bars until their diary day is marked complete.
+- Removes the outline when completion assigns the final yellow, green, or red status color.
+- Applies the outline in cyan for Graphite, purple for Purple, and blue for White / Red / Blue.
 
 Update through Settings → App updates → Check for updates → Download update.
