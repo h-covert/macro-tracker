@@ -17,8 +17,8 @@ public sealed partial class MainWindow {
     void UsdaSettingsCard() {
         var p=new StackPanel();p.Children.Add(Label("USDA food search",21,Ink));
         p.Children.Add(Label(new UsdaKey(store.Path).Personal ? "Personal API key saved on this Windows account." : "Ready to try with the USDA demo key. Add a free personal key for everyday use.",13,Muted));
-        p.Children.Add(Button("Set up USDA search",delegate{UsdaSetup(this);},true));
-        content.Children.Add(Box(p));
+        p.Children.Add(SettingsAction("Set up USDA search",delegate{UsdaSetup(this);},220));
+        AddSettingsBox(p);
     }
 
     void UsdaSetup(Window owner) {
