@@ -9,9 +9,9 @@ namespace MacroTracker {
 public sealed partial class MainWindow {
  Border sidebarSurface;
  [DllImport("dwmapi.dll")] static extern int DwmSetWindowAttribute(IntPtr hwnd,int attribute,ref int value,int size);
- internal static void RoundWindow(Window window){var handle=new WindowInteropHelper(window).Handle;if(handle==IntPtr.Zero)return;int corner=2;DwmSetWindowAttribute(handle,33,ref corner,4);int dark=Ink.ToString()=="#FF14223B"?0:1;DwmSetWindowAttribute(handle,20,ref dark,4);}
+ internal static void RoundWindow(Window window){var handle=new WindowInteropHelper(window).Handle;if(handle==IntPtr.Zero)return;int corner=2;DwmSetWindowAttribute(handle,33,ref corner,4);int dark=LightTheme?0:1;DwmSetWindowAttribute(handle,20,ref dark,4);}
  void InstallSoftStyles(){
- Resources["SoftSurface"]=Bg;Resources["SoftInk"]=Ink;Resources["SoftBorder"]=Brush(Ink.ToString()=="#FF14223B"?"#D8E1EF":"#495063");Resources["SoftAccent"]=Green;
+ Resources["SoftSurface"]=Bg;Resources["SoftInk"]=Ink;Resources["SoftBorder"]=Line;Resources["SoftAccent"]=Green;
  var text=new Style(typeof(TextBox),(Style)Resources[typeof(TextBox)]);
  text.Setters.Add(new Setter(Control.TemplateProperty,(ControlTemplate)XamlReader.Parse(@"<ControlTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' TargetType='TextBox'><Border x:Name='Frame' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' CornerRadius='12' Background='{TemplateBinding Background}' BorderBrush='{DynamicResource SoftBorder}' BorderThickness='1' Padding='{TemplateBinding Padding}'><ScrollViewer x:Name='PART_ContentHost'/></Border><ControlTemplate.Triggers><Trigger Property='IsKeyboardFocusWithin' Value='True'><Setter TargetName='Frame' Property='BorderBrush' Value='{DynamicResource SoftAccent}'/></Trigger><Trigger Property='IsEnabled' Value='False'><Setter Property='Opacity' Value='0.5'/></Trigger></ControlTemplate.Triggers></ControlTemplate>")));
  Resources[typeof(TextBox)]=text;

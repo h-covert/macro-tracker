@@ -32,7 +32,7 @@ Open **Day Targets** to save named presets, assign them Sunday through Saturday,
 
 On the **Dashboard**, mark each logged day complete when finished. Later food changes reopen the day. The new weekly chart and **Check-In** use completed days for averages/highest/lowest; partial days remain visible as faded bars. Check-In reviews the week before the selected date's week, with macros, target results, day-type comparisons, weight averages/trend, hunger, energy, workout performance, notes and next week's focus. Reviews are saved by week and can be reopened. No automatic target adjustments are made.
 
-**Settings → Color theme** offers Graphite, Purple, and White / Red / Blue. The dashboard uses separate outer Protein, middle Carbs and inner Fat rings. The dotted calorie goal follows each day's saved or scheduled target. Add-food previews show projected remaining macros before saving.
+**Settings → Color theme** offers Graphite, Purple, Pink, and White / Red / Blue. The dashboard uses one combined macro ring with separate Protein, Carbs, and Fat progress bars. The dotted calorie goal follows each day's saved or scheduled target. Add-food previews show projected remaining macros before saving.
 
 The first upgrade from the earlier database creates `.before-library-upgrade.bak`. Full database backups include saved recipes, schedules and check-ins. USDA credentials retain their existing separate storage.
 

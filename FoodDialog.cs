@@ -51,7 +51,7 @@ public sealed partial class MainWindow {
         var eaten=Field(timePanel,"Time eaten (AM/PM or 24-hour)",edit?entry["time"]:DateTime.Now.ToString("h:mm tt",CultureInfo.InvariantCulture));eaten.Name="FoodTime";
         timeCategory.Children.Add(timePanel);
         var categoryPanel=new StackPanel();categoryPanel.Children.Add(Label("Meal category",12,Muted));
-        var category=new ComboBox{ItemsSource=Store.Categories,SelectedItem=entry==null?DefaultCategory():entry["category"],Padding=new Thickness(10),Foreground=Bg};
+        var category=new ComboBox{ItemsSource=Store.Categories,SelectedItem=entry==null?DefaultCategory():entry["category"],Padding=new Thickness(10),Foreground=Ink};
         categoryPanel.Children.Add(category);timeCategory.Children.Add(categoryPanel);p.Children.Add(timeCategory);
         var notes=Field(p,"Notes (optional)",entry==null?"":entry["notes"]);notes.Name="FoodNotes";
         p.Children.Insert(4,Button("Search USDA foods",delegate {
