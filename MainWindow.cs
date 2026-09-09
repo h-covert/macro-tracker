@@ -12,22 +12,22 @@ using Forms=System.Windows.Forms;
 
 namespace MacroTracker {
 public sealed partial class MainWindow : Window {
-    readonly Store store; StackPanel content; StackPanel navigation; TextBlock status; DateTime selected=DateTime.Today, lastDay=DateTime.Today; string page="Dashboard"; Forms.NotifyIcon tray; DispatcherTimer timer; bool exiting; bool test; string lastReminder; Window foodDialog;
+    readonly Store store; StackPanel content; StackPanel navigation; ScrollViewer scroll; TextBlock status,brandTitle,brandSubtitle; DateTime selected=DateTime.Today, lastDay=DateTime.Today; string page="Dashboard"; Forms.NotifyIcon tray; DispatcherTimer timer; bool exiting; bool test; string lastReminder; Window foodDialog;
     public static Brush Bg=Brush("#10151E"), Card=Brush("#1B2432"), Muted=Brush("#9CAFC5"), Ink=Brush("#F3F6FC"), Green=Brush("#9CE4BD");
+    public static Brush StatusUnder=Brush("#F2C94C"),StatusNear=Brush("#35D07F"),StatusOver=Brush("#FF665E"),StatusFuture=Brush("#56636B");
     static string[] Colors={"#9CE4BD","#B4AAFF","#83CCF3","#F4C78C"};
     public static Brush Brush(string hex) {return new SolidColorBrush((Color)ColorConverter.ConvertFromString(hex));}
     public MainWindow(Store data,bool smoke) {
         store=data; ApplyTheme(); test=smoke; Title="Macro Tracker"; Width=1180; Height=820; MinWidth=940; MinHeight=640; Background=Bg; Foreground=Ink; FontFamily=new FontFamily("Segoe UI"); FontSize=14; WindowStartupLocation=WindowStartupLocation.CenterScreen;
         InstallStyles();SourceInitialized+=delegate{RoundWindow(this);};
-        var shell=new Grid{Background=Bg,Margin=new Thickness(12)}; shell.ColumnDefinitions.Add(new ColumnDefinition{Width=new GridLength(210)}); shell.ColumnDefinitions.Add(new ColumnDefinition()); Content=shell;
-        var sidebar=new DockPanel{Margin=new Thickness(0)}; sidebarSurface=new Border{Background=Card,CornerRadius=new CornerRadius(26),Child=sidebar};shell.Children.Add(sidebarSurface);
-        var bottom=new StackPanel{Margin=new Thickness(22)}; bottom.Children.Add(Label("LOCAL & PRIVATE",11,Green)); bottom.Children.Add(Label("Your progress. Your device.",12,Muted)); DockPanel.SetDock(bottom,Dock.Bottom); sidebar.Children.Add(bottom);
-        navigation=new StackPanel{Margin=new Thickness(18,28,18,0)}; sidebar.Children.Add(navigation);
-        navigation.Children.Add(Label("◒  MACRO",25,Ink)); navigation.Children.Add(Label("A LITTLE BETTER, DAILY",10,Muted)); navigation.Children.Add(new Border{Height=40});
-        foreach(string name in new[]{"Dashboard","Food Log","Library","Day Targets","Check-In","History","Weight","Settings"}) {string n=name; var b=Button(name,delegate {selected=DateTime.Today; Navigate(n);}); b.HorizontalContentAlignment=HorizontalAlignment.Left; b.Margin=new Thickness(0,0,0,9); b.Padding=new Thickness(17,13,10,13); navigation.Children.Add(b);}
-        var area=new DockPanel{Margin=new Thickness(24,18,12,8)}; Grid.SetColumn(area,1); shell.Children.Add(area);
+        var shell=new Grid{Background=Bg,Margin=new Thickness(12)};shell.RowDefinitions.Add(new RowDefinition{Height=GridLength.Auto});shell.RowDefinitions.Add(new RowDefinition());Content=shell;
+        var header=new DockPanel{LastChildFill=true,Margin=new Thickness(18,8,12,8)};sidebarSurface=new Border{Background=Card,CornerRadius=new CornerRadius(26),Child=header,Margin=new Thickness(0,0,0,10)};shell.Children.Add(sidebarSurface);
+        var brand=new StackPanel{Width=185,Margin=new Thickness(4,0,12,0),VerticalAlignment=VerticalAlignment.Center};brandTitle=Label("◒  MACRO",24,Ink);brandSubtitle=Label("A LITTLE BETTER, DAILY",9,Muted);brand.Children.Add(brandTitle);brand.Children.Add(brandSubtitle);DockPanel.SetDock(brand,Dock.Left);header.Children.Add(brand);
+        navigation=new StackPanel{Orientation=Orientation.Horizontal,VerticalAlignment=VerticalAlignment.Center};header.Children.Add(navigation);
+        foreach(string name in new[]{"Dashboard","Food Log","Library","Day Targets","Check-In","History","Weight","Settings"}) {string n=name;var b=Button(name,delegate{selected=DateTime.Today;Navigate(n);});b.FontSize=13;b.Margin=new Thickness(0,0,4,0);b.Padding=new Thickness(9,8,9,8);navigation.Children.Add(b);}
+        var area=new DockPanel{Margin=new Thickness(18,8,12,8),Background=Bg};Grid.SetRow(area,1);shell.Children.Add(area);
         status=Label("Ready · All changes saved locally",12,Muted); status.Margin=new Thickness(0,12,0,0); DockPanel.SetDock(status,Dock.Bottom); area.Children.Add(status);InstallUpdateBar(area);
-        var scroll=new ScrollViewer{VerticalScrollBarVisibility=ScrollBarVisibility.Auto,HorizontalScrollBarVisibility=ScrollBarVisibility.Disabled}; area.Children.Add(scroll); content=new StackPanel{Margin=new Thickness(0,0,12,0)}; scroll.Content=content;
+        scroll=new ScrollViewer{VerticalScrollBarVisibility=ScrollBarVisibility.Auto,HorizontalScrollBarVisibility=ScrollBarVisibility.Disabled}; area.Children.Add(scroll); content=new StackPanel{Margin=new Thickness(0,0,12,0)}; scroll.Content=content;
         store.EnsureDay(DateTime.Today); SetupTray();
         timer=new DispatcherTimer{Interval=TimeSpan.FromSeconds(15)}; timer.Tick+=delegate {Safe(Tick);}; timer.Start();
         Closing+=delegate(object sender,System.ComponentModel.CancelEventArgs e) {if(!exiting && !test && store.Get("setup","")=="1" && store.Get("tray","1")=="1") {e.Cancel=true; Hide();} else {timer.Stop(); tray.Dispose();}};
@@ -47,7 +47,7 @@ public sealed partial class MainWindow : Window {
     void Safe(Action action) {try{action();}catch(Exception e){if(test)throw;MessageBox.Show(this,e.Message,"Macro Tracker",MessageBoxButton.OK,MessageBoxImage.Warning); status.Text="Couldn't complete that change. Please try again.";}}
     void Notice(string text) {status.Text=text+" · Saved locally";}
     void Heading(string title,string subtitle) {content.Children.Add(Label(title,32,Ink)); content.Children.Add(Label(subtitle,14,Muted)); content.Children.Add(new Border{Height=16});}
-    public void Navigate(string name) {page=name; content.Children.Clear(); foreach(var button in navigation.Children.OfType<Button>()){button.Background=(string)button.Content==name?Green:Card;button.Foreground=(string)button.Content==name?Bg:Ink;} if(name=="Welcome"){Settings(true);return;} if(name=="Dashboard")ModernDashboard(); if(name=="Library")Library(); if(name=="Day Targets")DayTargets(); if(name=="Check-In")CheckIn(); if(name=="Food Log")FoodLog(); if(name=="History")History(); if(name=="Weight")Weight(); if(name=="Settings")Settings(false);}
+    public void Navigate(string name) {page=name;content.Children.Clear();scroll.ScrollToTop();foreach(var button in navigation.Children.OfType<Button>()){button.Background=(string)button.Content==name?Green:Card;button.Foreground=(string)button.Content==name?Bg:Ink;}if(name=="Welcome"){Settings(true);return;}if(name=="Dashboard")ModernDashboard();if(name=="Library")Library();if(name=="Day Targets")DayTargets();if(name=="Check-In")CheckIn();if(name=="Food Log")FoodLog();if(name=="History")History();if(name=="Weight")Weight();if(name=="Settings")Settings(false);}
     void DateControls() {var row=Row(); row.Children.Add(Button("‹ Previous",delegate{selected=selected.AddDays(-1);Navigate(page);})); var date=new SoftDatePicker(this,selected){Width=205,Margin=new Thickness(0,0,8,0)}; date.SelectedDateChanged+=delegate{if(date.SelectedDate.HasValue){selected=date.SelectedDate.Value;Navigate(page);}}; row.Children.Add(date); row.Children.Add(Button("Next ›",delegate{selected=selected.AddDays(1);Navigate(page);})); row.Children.Add(Button("Today",delegate{selected=DateTime.Today;Navigate(page);})); content.Children.Add(row);}
     void Dashboard() {
         Heading("Make today count.",DateTime.Today.ToString("dddd, MMMM d, yyyy")+"  ·  Your daily nutrition at a glance");

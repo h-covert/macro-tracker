@@ -9,7 +9,7 @@ public sealed class SoftDatePicker : Button {
  readonly Window owner; DateTime? value;
  public event EventHandler SelectedDateChanged;
  public DateTime? SelectedDate {get{return value;}set{this.value=value;Refresh();}}
- public SoftDatePicker(Window owner,DateTime initial){this.owner=owner;SelectedDate=initial;HorizontalContentAlignment=HorizontalAlignment.Left;Padding=new Thickness(14,10,14,10);Click+=delegate{OpenCalendar();};}
+ public SoftDatePicker(Window owner,DateTime initial){this.owner=owner;Style=(Style)owner.Resources[typeof(Button)];Background=MainWindow.Card;Foreground=MainWindow.Ink;SelectedDate=initial;HorizontalContentAlignment=HorizontalAlignment.Left;Padding=new Thickness(14,10,14,10);Click+=delegate{OpenCalendar();};}
  void Refresh(){Content=value.HasValue?"📅  "+value.Value.ToString("MMM d, yyyy",CultureInfo.CurrentCulture)+"    ⌄":"📅  Choose date    ⌄";}
  Button ActionButton(string text,Action action,bool primary=false){var button=new Button{Content=text,HorizontalContentAlignment=HorizontalAlignment.Center,Margin=new Thickness(2),Padding=new Thickness(10,8,10,8)};if(primary){button.Background=MainWindow.Green;button.Foreground=MainWindow.Bg;}button.Click+=delegate{action();};return button;}
  void OpenCalendar(){
