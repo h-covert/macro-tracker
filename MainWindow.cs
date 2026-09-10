@@ -12,7 +12,7 @@ using Forms=System.Windows.Forms;
 
 namespace MacroTracker {
 public sealed partial class MainWindow : Window {
-    readonly Store store; StackPanel content; StackPanel navigation; ScrollViewer scroll; TextBlock status,brandTitle,brandSubtitle; DateTime selected=DateTime.Today, lastDay=DateTime.Today; string page="Dashboard"; Forms.NotifyIcon tray; DispatcherTimer timer; bool exiting; bool test; string lastReminder; Window foodDialog;
+    readonly Store store; StackPanel content; StackPanel navigation; ScrollViewer scroll; TextBlock status,brandTitle,brandSubtitle; DateTime selected=DateTime.Today, lastDay=DateTime.Today; string page="Dashboard",libraryStartTab; Forms.NotifyIcon tray; DispatcherTimer timer; bool exiting; bool test; string lastReminder; Window foodDialog;
     public static Brush Bg=Brush("#10151E"), Card=Brush("#1B2432"), Muted=Brush("#9CAFC5"), Ink=Brush("#F3F6FC"), Green=Brush("#9CE4BD"), Line=Brush("#35404B");
     public static Brush StatusUnder=Brush("#F2C94C"),StatusNear=Brush("#35D07F"),StatusOver=Brush("#FF665E"),StatusFuture=Brush("#56636B");
     public static bool LightTheme;

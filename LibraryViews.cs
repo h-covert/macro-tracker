@@ -9,16 +9,17 @@ namespace MacroTracker {
 public sealed partial class MainWindow {
  Window Form(string title,out StackPanel panel){var w=new Window{Title=title,Owner=this,Width=720,Height=700,MinWidth=550,MinHeight=450,Background=Bg,Foreground=Ink,Resources=Resources,WindowStartupLocation=WindowStartupLocation.CenterOwner};panel=new StackPanel{Margin=new Thickness(22)};w.SourceInitialized+=delegate{RoundWindow(w);};w.Content=new ScrollViewer{Background=Bg,Content=panel,VerticalScrollBarVisibility=ScrollBarVisibility.Auto};return w;}
  ComboBox Choose(StackPanel p,string title,IEnumerable<string> options,string current){p.Children.Add(Label(title,13,Muted));var c=new ComboBox{ItemsSource=options.ToArray(),SelectedItem=current,Padding=new Thickness(8),Margin=new Thickness(0,0,0,12)};p.Children.Add(c);return c;}
+ void OpenLibraryTab(string tab){libraryStartTab=tab;Navigate("Library");}
  void Library(){
  Heading("Food library","Save meals, recipes, snacks and drinks. Copies remain independently editable.");
  var actions=Row();actions.Children.Add(Button("Create meal / recipe",delegate{LibraryEditor(null);},true));actions.Children.Add(Button("Save foods from a day",SelectDiaryMeal));actions.Children.Add(Button("Scan nutrition label",ScanLabel));content.Children.Add(actions);
  var search=Field(content,"Search library or history","");
- var tabs=Choose(content,"Browse",new[]{"History","Favorites","Saved Meals","Recipes","Snacks","Drinks"},"History");
+ var tabOptions=new[]{"Recents","History","Favorites","Saved Meals","Recipes","Snacks","Drinks"};var firstTab=tabOptions.Contains(libraryStartTab)?libraryStartTab:"History";libraryStartTab=null;var tabs=Choose(content,"Browse",tabOptions,firstTab);
  var listing=new StackPanel();content.Children.Add(listing);
  Action render=delegate{
  listing.Children.Clear();string tab=(string)tabs.SelectedItem;string query=search.Text;
- if(tab=="History"||tab=="Favorites"){
- var entries=store.Db.Query(tab=="History"?"SELECT * FROM foods WHERE name LIKE ? ORDER BY day DESC,time DESC LIMIT 100":"SELECT * FROM favorites WHERE name LIKE ? ORDER BY name LIMIT 100","%"+query+"%");
+ if(tab=="Recents"||tab=="History"||tab=="Favorites"){
+ var entries=tab=="Recents"?store.Recent().Where(r=>r["name"].IndexOf(query,StringComparison.OrdinalIgnoreCase)>=0).ToList():store.Db.Query(tab=="History"?"SELECT * FROM foods WHERE name LIKE ? ORDER BY day DESC,time DESC LIMIT 100":"SELECT * FROM favorites WHERE name LIKE ? ORDER BY name LIMIT 100","%"+query+"%");
  foreach(var r in entries){var item=r;var p=new StackPanel();p.Children.Add(Label(item["name"]+" · "+Store.F(Store.Values(item)[0])+" kcal",18,Ink));p.Children.Add(Label((item.ContainsKey("day")?item["day"]+" · ":"")+item["category"]+" · "+Store.F(FoodPortion.Quantity(item))+" × "+item["serving"],12,Muted));var row=Row();row.Children.Add(Button("Copy to day",delegate{CopyFood(item);}));row.Children.Add(Button("Save as meal / recipe",delegate{LibraryEditor(new List<LibraryItem>{LibraryItem.From(item)});}));row.Children.Add(Button(tab=="Favorites"?"Remove favorite":"Favorite",delegate{if(tab=="Favorites")store.Db.Query("DELETE FROM favorites WHERE id=?",item["id"]);else store.Favorite(item);Navigate("Library");}));p.Children.Add(row);listing.Children.Add(Box(p));}
  if(entries.Count==0)listing.Children.Add(Label("No matching entries yet.",15,Muted));
  }else{

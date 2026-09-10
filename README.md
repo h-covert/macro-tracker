@@ -38,7 +38,7 @@ The first upgrade from the earlier database creates `.before-library-upgrade.bak
 
 ## Daily use
 
-- **Dashboard:** calories, protein, carbs, and fat consumed/target/remaining.
+- **Dashboard:** calories, protein, carbs, and fat consumed/target/remaining. Use the **+ Add food** menu to create a food or jump directly to Recents, Saved Meals, or Favorites.
 - **Add food / Ctrl+N:** enter a food or select **Search USDA foods**. Missing nutrients stay blank for review. Save favorites for offline reuse.
 - **Quantity:** macros are entered for one item/serving; quantity scales the total. For two eggs, define `1 whole egg` with per-egg macros and quantity `2`. USDA household portions such as `1 large` are offered where available.
 - **Time eaten:** editable for new and existing entries. Accepts `8:15 AM`, `7:10 PM`, or `19:10`. The log sorts by meal time. Use the date picker for another day.
