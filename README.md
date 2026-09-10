@@ -24,7 +24,7 @@ The first setup adds this capability to older portable versions. After that, use
 
 ## New in 1.4.0
 
-Open **Library** for History, Favorites, Saved Meals, Recipes, Snacks, and Drinks. Copy an entry to any date/time, select several diary foods to save together, or create a recipe with individual USDA/custom ingredients. A recipe stores a complete batch with a serving count and optional finished weight. Logging a portion scales every ingredient and creates independent diary copies. Recipe edits never rewrite earlier diary entries.
+Open **Library** for Recents, History, Favorites, Saved Meals, Recipes, Snacks, and Drinks. Copy an entry to any date/time, select several diary foods to save together, or create a recipe with individual USDA/custom ingredients. The recipe ingredient picker combines duplicate history and favorite entries that share the same name and serving. A recipe stores a complete batch with a serving count and optional finished weight. Logging a portion scales every ingredient and creates independent diary copies. Recipe edits never rewrite earlier diary entries.
 
 Open **Day Targets** to save named presets, assign them Sunday through Saturday, and apply explicit single-day overrides. A schedule applies when a day's targets are first saved; existing days keep their target snapshots. Use the override to change today after editing a schedule. Training/rest presets are user-defined; the app does not guess appropriate nutrition targets.
 

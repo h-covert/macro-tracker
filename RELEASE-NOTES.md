@@ -1,7 +1,7 @@
-Macro Tracker 1.5.4 makes food shortcuts faster and corrects the dashboard ring alignment.
+Macro Tracker 1.5.5 cleans up ingredient selection when building meals and recipes.
 
-- Changes the dashboard's + Add food button into a themed menu for Create new, Recents, Library, and Favorites.
-- Adds a dedicated Recents view to the Food library and opens each shortcut on the requested section.
-- Places every colored macro segment on the exact same centerline and radius as the gray ring track.
+- Collapses duplicate favorite and food-history entries with the same name and serving size.
+- Restyles the ingredient results as a rounded surface that follows the active color theme.
+- Adds clearer search, result, quantity, and selection guidance with serving size and calories on every result.
 
 Update through Settings → App updates → Check for updates → Download update.
