@@ -36,6 +36,9 @@ public static class PortionTests {
             bad=false;try{FoodPortion.Scale(one,0);}catch(ArgumentException){bad=true;}Check(bad,"zero quantity rejected");
             Check(FoodPortion.NormalizeTime("12:00 AM")=="00:00:00"&&FoodPortion.NormalizeTime("12:00 PM")=="12:00:00","AM PM noon and midnight handled");
             Check(FoodPortion.NormalizeTime("08:12:34")=="08:12:34","existing seconds preserved");
+            Check(FoodPortion.Measure("1 g")==FoodPortion.GramMeasure&&FoodPortion.Definition(FoodPortion.GramMeasure,"ignored")=="1 gram","gram measure has a fixed one-gram nutrition basis");
+            Check(FoodPortion.Measure("1 oz (weight)")==FoodPortion.OunceMeasure&&FoodPortion.AmountDescription(2.5,FoodPortion.OunceMeasure,"").Contains("oz"),"ounce measure is inferred and displayed by weight");
+            Check(FoodPortion.Measure("1 whole egg")==FoodPortion.ItemMeasure&&FoodPortion.Definition(FoodPortion.ItemMeasure," 1 whole egg ")=="1 whole egg","countable item keeps its editable description");
             store.Export(path+".csv",false,"kg");Check(File.ReadAllText(path+".csv").Contains("quantity"),"CSV includes quantity");
             store.Backup(path+".backup");store.Db.Query("DELETE FROM foods");store.Restore(path+".backup");Check(FoodPortion.Quantity(store.Foods(date)[0])==3,"backup restore retains quantity");
         }
@@ -72,9 +75,12 @@ public static class PortionTests {
             try {
                 if(step==0){step++;window.Dispatcher.BeginInvoke(new Action(delegate{window.AddFood(null,false);}));return;}
                 if(step==2){Check(store.Foods(DateTime.Today).Count==1&&store.Totals(DateTime.Today)[0]==144,"UI adds two eggs in one entry");step++;window.Dispatcher.BeginInvoke(new Action(delegate{window.AddFood(store.Foods(DateTime.Today)[0],true);}));return;}
-                if(step==4){timer.Stop();var row=store.Foods(DateTime.Today)[0];Check(FoodPortion.Quantity(row)==3&&row["time"]=="19:15:00"&&store.Totals(DateTime.Today)[0]==216,"UI edits quantity and meal time");File.WriteAllText(store.Path+".portion-ui-results.txt","PASS: UI saved 2 whole eggs at 8:15 AM, reopened Edit, changed quantity to 3 and time to 7:15 PM with the quarter-hour picker; verified totals, one entry, and saved time.");window.Exit();return;}
+                if(step==4){timer.Stop();var row=store.Foods(DateTime.Today)[0];Check(FoodPortion.Quantity(row)==3&&row["time"]=="19:15:00"&&store.Totals(DateTime.Today)[0]==216,"UI edits quantity and meal time");File.WriteAllText(store.Path+".portion-ui-results.txt","PASS: Add Food offered Item / serving, Grams, and Ounces; weight choices used fixed nutrition bases; UI saved 2 whole eggs at 8:15 AM, reopened Edit, changed amount to 3 and time to 7:15 PM; verified totals, one entry, and saved time.");window.Exit();return;}
                 var dialog=Application.Current.Windows.Cast<Window>().Last(w=>w!=window);
                 if(step==1) {
+                    var measure=Choice(dialog,"FoodMeasure");Check(measure.Items.Count==3&&measure.Items.Cast<string>().SequenceEqual(FoodPortion.Measures),"UI offers Item / serving, Grams, and Ounces");
+                    measure.SelectedItem=FoodPortion.GramMeasure;Check(Field(dialog,"FoodServing").IsReadOnly&&Field(dialog,"FoodServing").Text=="1 gram","gram selection fixes the nutrition basis");
+                    measure.SelectedItem=FoodPortion.OunceMeasure;Check(Field(dialog,"FoodServing").Text=="1 ounce","ounce selection fixes the nutrition basis");measure.SelectedItem=FoodPortion.ItemMeasure;
                     Field(dialog,"FoodName").Text="Whole eggs";Field(dialog,"FoodQuantity").Text="2";Field(dialog,"FoodServing").Text="1 whole egg";
                     Field(dialog,"FoodCalories").Text="72";Field(dialog,"FoodProtein").Text="6.3";Field(dialog,"FoodCarbs").Text="0.4";Field(dialog,"FoodFat").Text="4.8";Choice(dialog,"FoodTimeClock").SelectedItem="8:15";Choice(dialog,"FoodTimePeriod").SelectedItem="AM";
                     dialog.UpdateLayout();var visual=(FrameworkElement)dialog.Content;var bmp=new RenderTargetBitmap((int)visual.ActualWidth,(int)visual.ActualHeight,96,96,PixelFormats.Pbgra32);bmp.Render(visual);var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(bmp));using(var f=File.Create(store.Path+".quantity.png"))png.Save(f);

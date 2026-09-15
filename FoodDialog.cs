@@ -41,19 +41,26 @@ public sealed partial class MainWindow {
         DateTime date=edit?DateTime.Parse(entry["day"],CultureInfo.InvariantCulture):selected;
         p.Children.Add(Label(date.ToString("D"),13,Muted));
         var name=Field(p,"Food or meal name",entry==null?"":entry["name"]);name.Name="FoodName";name.MaxLength=200;
+        string initialServing=entry==null||entry["serving"]==""?"1 item / serving":entry["serving"];
+        string initialMeasure=FoodPortion.Measure(initialServing),savedItemServing=initialMeasure==FoodPortion.ItemMeasure?initialServing:"1 item / serving",previousMeasure=initialMeasure;
         var quantityRow=new System.Windows.Controls.Primitives.UniformGrid{Columns=2};
         var qPanel=new StackPanel{Margin=new Thickness(0,0,14,0)};
-        var quantity=Field(qPanel,"Quantity",FoodPortion.Precise(FoodPortion.Quantity(entry)));quantity.Name="FoodQuantity";
+        var quantity=Field(qPanel,"Amount",FoodPortion.Precise(FoodPortion.Quantity(entry)));quantity.Name="FoodQuantity";
         quantityRow.Children.Add(qPanel);
+        var measurePanel=new StackPanel();measurePanel.Children.Add(Label("Measure",12,Muted));
+        var measure=new ComboBox{ItemsSource=FoodPortion.Measures,SelectedItem=initialMeasure,Padding=new Thickness(10),Margin=new Thickness(0,0,0,14),Name="FoodMeasure"};measurePanel.Children.Add(measure);
+        quantityRow.Children.Add(measurePanel);p.Children.Add(quantityRow);
         var servingPanel=new StackPanel();
-        var serving=Field(servingPanel,"One item / serving (e.g. 1 whole egg)",entry==null||entry["serving"]==""?"1 serving":entry["serving"]);serving.Name="FoodServing";
-        quantityRow.Children.Add(servingPanel);p.Children.Add(quantityRow);
-        p.Children.Add(Label("Macros below are for ONE item / serving. Quantity scales the total automatically.",12,Muted));
+        var serving=Field(servingPanel,"Item / serving description (e.g. 1 whole egg)",initialServing);serving.Name="FoodServing";
+        p.Children.Add(servingPanel);
+        var measureHint=Label("",12,Muted);measureHint.Name="FoodMeasureHint";p.Children.Add(measureHint);
         var fields=new TextBox[4];var grid=new System.Windows.Controls.Primitives.UniformGrid{Columns=2};
+        var macroLabels=new TextBlock[4];
         for(int i=0;i<4;i++) {
             var cell=new StackPanel{Margin=new Thickness(0,0,12,0)};
             double value=entry==null?0:Store.Values(entry)[i]/FoodPortion.Quantity(entry);
-            fields[i]=Field(cell,Store.MacroNames[i]+(i==0?" per item (kcal)":" per item (g)"),FoodPortion.Precise(value));
+            fields[i]=Field(cell,Store.MacroNames[i]+(i==0?" per measure (kcal)":" per measure (g)"),FoodPortion.Precise(value));
+            macroLabels[i]=(TextBlock)cell.Children[0];
             fields[i].Name="Food"+Store.MacroNames[i];grid.Children.Add(cell);
         }
         p.Children.Add(grid);
@@ -69,26 +76,38 @@ public sealed partial class MainWindow {
             SearchUsda(win,delegate(UsdaFood food,double basis,string definition,double count) {
                 name.Text=food.Name.Length>200?food.Name.Substring(0,200):food.Name;
                 for(int i=0;i<4;i++)fields[i].Text=food.Macros[i].HasValue?FoodPortion.Precise(food.Macros[i].Value*basis/100/count):"";
-                serving.Text=definition;quantity.Text=FoodPortion.Precise(count);
+                serving.Text=definition;measure.SelectedItem=FoodPortion.Measure(definition);quantity.Text=FoodPortion.Precise(count);
                 notes.Text="Source: USDA FoodData Central · FDC "+food.Id+" · "+food.Type;
             },name.Text);
         },true));
         var favorite=new CheckBox{Content="Save as a favorite",Name="FoodFavorite"};p.Children.Add(favorite);
         Action update=delegate {
             try {
-                var total=FoodPortion.Scale(fields.Select(x=>Number(x,false)).ToArray(),ReadQuantity(quantity));
-                preview.Text="TOTAL FOR "+quantity.Text+" × "+serving.Text+"\n"+Store.F(total[0])+" kcal   ·   P "+Store.F(total[1])+"g   ·   C "+Store.F(total[2])+"g   ·   F "+Store.F(total[3])+"g";
+                double amount=ReadQuantity(quantity);string selectedMeasure=(string)measure.SelectedItem;
+                var total=FoodPortion.Scale(fields.Select(x=>Number(x,false)).ToArray(),amount);
+                preview.Text="TOTAL FOR "+FoodPortion.AmountDescription(amount,selectedMeasure,serving.Text)+"\n"+Store.F(total[0])+" kcal   ·   P "+Store.F(total[1])+"g   ·   C "+Store.F(total[2])+"g   ·   F "+Store.F(total[3])+"g";
                 var remaining=store.Targets(date);var logged=store.Totals(date);var previous=edit?Store.Values(entry):new double[4];preview.Text+="\nAfter saving: "+string.Join(" · ",Enumerable.Range(0,4).Select(i=>Store.F(remaining[i]-logged[i]+previous[i]-total[i])+(i==0?" kcal": "g "+Store.MacroNames[i])+" left"));
-            } catch(ArgumentException) {preview.Text="Enter a valid quantity and all four per-item macro values to see the total.";}
+            } catch(ArgumentException) {preview.Text="Enter a valid amount and all four per-measure macro values to see the total.";}
+        };
+        Action applyMeasure=delegate {
+            string selectedMeasure=(string)measure.SelectedItem;
+            if(previousMeasure==FoodPortion.ItemMeasure&&!serving.IsReadOnly&&!string.IsNullOrWhiteSpace(serving.Text))savedItemServing=serving.Text;
+            serving.IsReadOnly=selectedMeasure!=FoodPortion.ItemMeasure;
+            serving.Text=selectedMeasure==FoodPortion.ItemMeasure?savedItemServing:FoodPortion.Definition(selectedMeasure,"");
+            ((TextBlock)servingPanel.Children[0]).Text=selectedMeasure==FoodPortion.ItemMeasure?"Item / serving description (e.g. 1 whole egg)":"Nutrition basis";
+            measureHint.Text=selectedMeasure==FoodPortion.ItemMeasure?"Enter macros for one item or serving. Amount multiplies the total.":"Enter macros for "+FoodPortion.BasisLabel(selectedMeasure)+". Amount is the weight you ate.";
+            for(int i=0;i<4;i++)macroLabels[i].Text=Store.MacroNames[i]+" per "+FoodPortion.BasisLabel(selectedMeasure)+(i==0?" (kcal)":" (g)");
+            previousMeasure=selectedMeasure;update();
         };
         foreach(var field in fields)field.TextChanged+=delegate{update();};quantity.TextChanged+=delegate{update();};serving.TextChanged+=delegate{update();};update();
+        measure.SelectionChanged+=delegate{applyMeasure();};applyMeasure();
         var buttons=Row();
         var save=Button(edit?"Save changes":"Add food",delegate {
             try {
                 double count=ReadQuantity(quantity);
                 var total=FoodPortion.Scale(fields.Select(x=>Number(x,false)).ToArray(),count);
-                if(string.IsNullOrWhiteSpace(serving.Text))throw new ArgumentException("Describe one item / serving, such as 1 whole egg or 100 g.");
-                store.SaveFood(edit?entry["id"]:null,date,name.Text,total,(string)category.SelectedItem,serving.Text.Trim(),notes.Text,eaten.Value,count);
+                string definition=FoodPortion.Definition((string)measure.SelectedItem,serving.Text);
+                store.SaveFood(edit?entry["id"]:null,date,name.Text,total,(string)category.SelectedItem,definition,notes.Text,eaten.Value,count);
                 if(favorite.IsChecked==true) {
                     var saved=edit?store.Foods(date).First(x=>x["id"]==entry["id"]):store.Db.Query("SELECT * FROM foods ORDER BY id DESC LIMIT 1")[0];
                     store.Favorite(saved);

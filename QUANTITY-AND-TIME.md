@@ -9,11 +9,11 @@ On the first open, the app makes `macro-tracker.db.before-quantity-upgrade.bak` 
 ## Log two whole eggs in one entry
 
 1. Open **Add food** or choose **Edit** on an existing entry.
-2. Set **One item / serving** to `1 whole egg` and use the macros for one egg.
-3. Set **Quantity** to `2`.
+2. Set **Measure** to **Item / serving** and describe it as `1 whole egg`.
+3. Enter the macros for one egg and set **Amount** to `2`.
 4. Check the total preview, then save.
 
-Quantity scales all four macros. The editable macro boxes always show values for **one** item / serving; the preview and diary show the full quantity's totals. You can change the quantity on an existing entry without adding duplicate entries. Fractional quantities such as `0.5` are supported. Favorites and recent foods retain the serving definition and quantity so they can be reused and adjusted.
+Amount scales all four macros. Choose **Item / serving** for countable foods such as an egg, slice, scoop, bottle, or package. Choose **Grams** or **Ounces** for weighed foods; the macro boxes then show values per one gram or one ounce. The preview and diary show the full amount's totals. You can change the amount on an existing entry without adding duplicate entries. Fractional amounts such as `0.5` are supported. Favorites and recent foods retain the serving definition and amount so they can be reused and adjusted.
 
 With USDA search, select the matching egg food, wait for portion sizes to load, and choose a portion such as **1 large (50 g)** in the unit menu. Set its amount to **2** and choose **Use this food**. The Add Food form receives the per-egg macros and quantity 2 automatically. USDA supplies the portion weights; the app does not guess them. Available portions vary by food. If a food has no household portions, grams/ounces still work. Loading portion sizes makes one additional USDA request per selected common food; the result is cached for that food in the current search cache.
 
