@@ -1,7 +1,7 @@
-Macro Tracker 1.5.5 cleans up ingredient selection when building meals and recipes.
+Macro Tracker 1.5.6 makes food times quicker and more consistent to select.
 
-- Collapses duplicate favorite and food-history entries with the same name and serving size.
-- Restyles the ingredient results as a rounded surface that follows the active color theme.
-- Adds clearer search, result, quantity, and selection guidance with serving size and calories on every result.
+- Replaces free-text meal times with separate themed dropdowns for clock time and AM/PM.
+- Offers every 15-minute interval from 12:00 through 11:45 in Quick Add, Edit, Copy Food, and Saved Meal logging.
+- Preserves previously saved non-quarter-hour times when an older entry is edited.
 
 Update through Settings → App updates → Check for updates → Download update.

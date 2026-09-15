@@ -21,8 +21,8 @@ Older entries have a quantity of **1**, representing the **entire portion origin
 
 ## Set the time you ate
 
-**Time eaten** is available for both Add Food and Edit. Enter a time such as `8:15 AM`, `7:10 PM`, or `19:10`. New entries start with the current time, but you can change it before saving. Reused favorites/recent foods start with the current time, not the original meal's time. Editing an entry preserves its saved time until you change it.
+**Time eaten** is available for Add Food, Edit, Copy Food, and saved meals. Choose a clock time in 15-minute intervals, then choose AM or PM. New and reused entries start at the current quarter-hour rather than the original meal's time. Editing an entry preserves its saved time until you change it; older non-quarter-hour times remain available for that entry.
 
 The date shown above the form is the diary date. Use the Food Log date picker to log or edit food on another day. Changing the time reorders the day's food list chronologically. Invalid times, zero quantities, and negative quantities are rejected. Edited times, quantities, and total macros persist after restarting and in database backups. Food CSV export includes a `quantity` column; its calories/macros are still totals for the entire entry.
 
-The updated build passed 20 quantity/time/portion/migration/restore checks, the 27 core integration checks, and a real-window test that logged two eggs at 8:15 AM, edited the entry to three eggs at 7:10 PM, and verified the stored result.
+The updated build passed the quantity/time, portion, migration, restore, core integration, and real-window tests, including logging two eggs at 8:15 AM and editing the entry to three eggs at 7:15 PM.

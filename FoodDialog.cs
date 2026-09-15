@@ -7,6 +7,17 @@ using System.Windows.Controls;
 
 namespace MacroTracker {
 public sealed partial class MainWindow {
+    sealed class TimeChoice {
+        internal ComboBox Clock,Period;
+        internal string Value {get {if(Clock.SelectedItem==null||Period.SelectedItem==null)throw new ArgumentException("Choose a time and AM or PM.");return Clock.SelectedItem+" "+Period.SelectedItem;}}
+    }
+    TimeChoice TimePicker(StackPanel panel,string initial,string namePrefix) {
+        DateTime chosen;
+        if(string.IsNullOrWhiteSpace(initial)){chosen=DateTime.Now;chosen=new DateTime(chosen.Year,chosen.Month,chosen.Day,chosen.Hour,chosen.Minute/15*15,0);}
+        else chosen=DateTime.Today.Add(TimeSpan.ParseExact(FoodPortion.NormalizeTime(initial),"hh\\:mm\\:ss",CultureInfo.InvariantCulture));
+        var times=Enumerable.Range(0,48).Select(i=>DateTime.Today.AddMinutes(i*15).ToString("h:mm",CultureInfo.InvariantCulture)).ToList();string exact=chosen.ToString("h:mm",CultureInfo.InvariantCulture);if(!times.Contains(exact))times.Insert(Math.Min(times.Count,(chosen.Hour%12*60+chosen.Minute)/15+1),exact);
+        panel.Children.Add(Label("Time eaten · 15-minute intervals",12,Muted));var row=Row();row.Margin=new Thickness(0,0,0,14);var result=new TimeChoice();result.Clock=new ComboBox{ItemsSource=times,SelectedItem=exact,Width=160,Name=namePrefix+"Clock",Padding=new Thickness(10),Margin=new Thickness(0,0,8,0)};result.Period=new ComboBox{ItemsSource=new[]{"AM","PM"},SelectedItem=chosen.ToString("tt",CultureInfo.InvariantCulture),Width=100,Name=namePrefix+"Period",Padding=new Thickness(10)};row.Children.Add(result.Clock);row.Children.Add(result.Period);panel.Children.Add(row);return result;
+    }
     static double ReadQuantity(TextBox field) {
         double value;if(!double.TryParse(field.Text,NumberStyles.Float,CultureInfo.CurrentCulture,out value))
             throw new ArgumentException("Enter a numeric quantity such as 2 or 0.5.");
@@ -48,7 +59,7 @@ public sealed partial class MainWindow {
         p.Children.Add(grid);
         var timeCategory=new System.Windows.Controls.Primitives.UniformGrid{Columns=2};
         var timePanel=new StackPanel{Margin=new Thickness(0,0,12,0)};
-        var eaten=Field(timePanel,"Time eaten (AM/PM or 24-hour)",edit?entry["time"]:DateTime.Now.ToString("h:mm tt",CultureInfo.InvariantCulture));eaten.Name="FoodTime";
+        var eaten=TimePicker(timePanel,edit?entry["time"]:null,"FoodTime");
         timeCategory.Children.Add(timePanel);
         var categoryPanel=new StackPanel();categoryPanel.Children.Add(Label("Meal category",12,Muted));
         var category=new ComboBox{ItemsSource=Store.Categories,SelectedItem=entry==null?DefaultCategory():entry["category"],Padding=new Thickness(10),Foreground=Ink};
@@ -77,7 +88,7 @@ public sealed partial class MainWindow {
                 double count=ReadQuantity(quantity);
                 var total=FoodPortion.Scale(fields.Select(x=>Number(x,false)).ToArray(),count);
                 if(string.IsNullOrWhiteSpace(serving.Text))throw new ArgumentException("Describe one item / serving, such as 1 whole egg or 100 g.");
-                store.SaveFood(edit?entry["id"]:null,date,name.Text,total,(string)category.SelectedItem,serving.Text.Trim(),notes.Text,eaten.Text,count);
+                store.SaveFood(edit?entry["id"]:null,date,name.Text,total,(string)category.SelectedItem,serving.Text.Trim(),notes.Text,eaten.Value,count);
                 if(favorite.IsChecked==true) {
                     var saved=edit?store.Foods(date).First(x=>x["id"]==entry["id"]):store.Db.Query("SELECT * FROM foods ORDER BY id DESC LIMIT 1")[0];
                     store.Favorite(saved);

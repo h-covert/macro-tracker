@@ -65,19 +65,20 @@ public static class PortionTests {
     }
     static IEnumerable<DependencyObject> All(DependencyObject root) {for(int i=0;i<VisualTreeHelper.GetChildrenCount(root);i++){var child=VisualTreeHelper.GetChild(root,i);yield return child;foreach(var d in All(child))yield return d;}}
     static TextBox Field(Window w,string name){return All(w).OfType<TextBox>().First(x=>x.Name==name);}
+    static ComboBox Choice(Window w,string name){return All(w).OfType<ComboBox>().First(x=>x.Name==name);}
     public static void Smoke(MainWindow window,Store store) {
         var timer=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(500)};int step=0;
         timer.Tick+=delegate {
             try {
                 if(step==0){step++;window.Dispatcher.BeginInvoke(new Action(delegate{window.AddFood(null,false);}));return;}
                 if(step==2){Check(store.Foods(DateTime.Today).Count==1&&store.Totals(DateTime.Today)[0]==144,"UI adds two eggs in one entry");step++;window.Dispatcher.BeginInvoke(new Action(delegate{window.AddFood(store.Foods(DateTime.Today)[0],true);}));return;}
-                if(step==4){timer.Stop();var row=store.Foods(DateTime.Today)[0];Check(FoodPortion.Quantity(row)==3&&row["time"]=="19:10:00"&&store.Totals(DateTime.Today)[0]==216,"UI edits quantity and meal time");File.WriteAllText(store.Path+".portion-ui-results.txt","PASS: UI saved 2 whole eggs at 8:15 AM, reopened Edit, changed quantity to 3 and time to 7:10 PM; verified totals, one entry, and saved time.");window.Exit();return;}
+                if(step==4){timer.Stop();var row=store.Foods(DateTime.Today)[0];Check(FoodPortion.Quantity(row)==3&&row["time"]=="19:15:00"&&store.Totals(DateTime.Today)[0]==216,"UI edits quantity and meal time");File.WriteAllText(store.Path+".portion-ui-results.txt","PASS: UI saved 2 whole eggs at 8:15 AM, reopened Edit, changed quantity to 3 and time to 7:15 PM with the quarter-hour picker; verified totals, one entry, and saved time.");window.Exit();return;}
                 var dialog=Application.Current.Windows.Cast<Window>().Last(w=>w!=window);
                 if(step==1) {
                     Field(dialog,"FoodName").Text="Whole eggs";Field(dialog,"FoodQuantity").Text="2";Field(dialog,"FoodServing").Text="1 whole egg";
-                    Field(dialog,"FoodCalories").Text="72";Field(dialog,"FoodProtein").Text="6.3";Field(dialog,"FoodCarbs").Text="0.4";Field(dialog,"FoodFat").Text="4.8";Field(dialog,"FoodTime").Text="8:15 AM";
+                    Field(dialog,"FoodCalories").Text="72";Field(dialog,"FoodProtein").Text="6.3";Field(dialog,"FoodCarbs").Text="0.4";Field(dialog,"FoodFat").Text="4.8";Choice(dialog,"FoodTimeClock").SelectedItem="8:15";Choice(dialog,"FoodTimePeriod").SelectedItem="AM";
                     dialog.UpdateLayout();var visual=(FrameworkElement)dialog.Content;var bmp=new RenderTargetBitmap((int)visual.ActualWidth,(int)visual.ActualHeight,96,96,PixelFormats.Pbgra32);bmp.Render(visual);var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(bmp));using(var f=File.Create(store.Path+".quantity.png"))png.Save(f);
-                } else if(step==3){Field(dialog,"FoodQuantity").Text="3";Field(dialog,"FoodTime").Text="7:10 PM";}
+                } else if(step==3){Field(dialog,"FoodQuantity").Text="3";Choice(dialog,"FoodTimeClock").SelectedItem="7:15";Choice(dialog,"FoodTimePeriod").SelectedItem="PM";}
                 step++;All(dialog).OfType<Button>().First(b=>b.Name=="FoodSave").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             }catch(Exception e){timer.Stop();File.WriteAllText(store.Path+".portion-ui-error.txt",e.ToString());window.Exit();}
         };timer.Start();
