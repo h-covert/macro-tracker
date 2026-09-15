@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace MacroTracker {
 public sealed partial class MainWindow {
@@ -22,6 +23,10 @@ public sealed partial class MainWindow {
         double value;if(!double.TryParse(field.Text,NumberStyles.Float,CultureInfo.CurrentCulture,out value))
             throw new ArgumentException("Enter a numeric quantity such as 2 or 0.5.");
         FoodPortion.ValidateQuantity(value);return value;
+    }
+    static void SelectAllOnEntry(TextBox field) {
+        field.GotKeyboardFocus+=delegate{field.SelectAll();};
+        field.PreviewMouseLeftButtonDown+=delegate(object sender,MouseButtonEventArgs e){if(!field.IsKeyboardFocusWithin){e.Handled=true;field.Focus();}};
     }
     public void AddFood(Dictionary<string,string> entry,bool edit) {
         if(foodDialog!=null){foodDialog.Activate();return;}
@@ -46,6 +51,7 @@ public sealed partial class MainWindow {
         var quantityRow=new System.Windows.Controls.Primitives.UniformGrid{Columns=2};
         var qPanel=new StackPanel{Margin=new Thickness(0,0,14,0)};
         var quantity=Field(qPanel,"Amount",FoodPortion.Precise(FoodPortion.Quantity(entry)));quantity.Name="FoodQuantity";
+        SelectAllOnEntry(quantity);
         quantityRow.Children.Add(qPanel);
         var measurePanel=new StackPanel();measurePanel.Children.Add(Label("Measure",12,Muted));
         var measure=new ComboBox{ItemsSource=FoodPortion.Measures,SelectedItem=initialMeasure,Padding=new Thickness(10),Margin=new Thickness(0,0,0,14),Name="FoodMeasure"};measurePanel.Children.Add(measure);
@@ -60,6 +66,7 @@ public sealed partial class MainWindow {
             var cell=new StackPanel{Margin=new Thickness(0,0,12,0)};
             double value=entry==null?0:Store.Values(entry)[i]/FoodPortion.Quantity(entry);
             fields[i]=Field(cell,Store.MacroNames[i]+(i==0?" per measure (kcal)":" per measure (g)"),FoodPortion.Precise(value));
+            SelectAllOnEntry(fields[i]);
             macroLabels[i]=(TextBlock)cell.Children[0];
             fields[i].Name="Food"+Store.MacroNames[i];grid.Children.Add(cell);
         }

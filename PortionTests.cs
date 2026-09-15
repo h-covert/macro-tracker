@@ -79,6 +79,8 @@ public static class PortionTests {
                 var dialog=Application.Current.Windows.Cast<Window>().Last(w=>w!=window);
                 if(step==1) {
                     var measure=Choice(dialog,"FoodMeasure");Check(measure.Items.Count==3&&measure.Items.Cast<string>().SequenceEqual(FoodPortion.Measures),"UI offers Item / serving, Grams, and Ounces");
+                    var protein=Field(dialog,"FoodProtein");protein.Focus();Check(protein.SelectionStart==0&&protein.SelectionLength==protein.Text.Length,"macro value selects all when entered");
+                    var amount=Field(dialog,"FoodQuantity");amount.Focus();Check(amount.SelectionStart==0&&amount.SelectionLength==amount.Text.Length,"amount selects all when entered");
                     measure.SelectedItem=FoodPortion.GramMeasure;Check(Field(dialog,"FoodServing").IsReadOnly&&Field(dialog,"FoodServing").Text=="1 gram","gram selection fixes the nutrition basis");
                     measure.SelectedItem=FoodPortion.OunceMeasure;Check(Field(dialog,"FoodServing").Text=="1 ounce","ounce selection fixes the nutrition basis");measure.SelectedItem=FoodPortion.ItemMeasure;
                     Field(dialog,"FoodName").Text="Whole eggs";Field(dialog,"FoodQuantity").Text="2";Field(dialog,"FoodServing").Text="1 whole egg";
